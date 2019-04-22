@@ -561,9 +561,9 @@ void TracingHandler::OnTraceDataCollected(
   message += "] } }";
   if (use_binary_protocol_) {
     auto parsed = protocol::StringUtil::parseMessage(message, false);
-    frontend_->sendRawNotification(parsed->serializeToBinary());
+    frontend_->sendRawCBORNotification(parsed->serializeToBinary());
   } else {
-    frontend_->sendRawNotification(std::move(message));
+    frontend_->sendRawJSONNotification(std::move(message));
   }
 }
 
