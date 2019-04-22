@@ -246,6 +246,8 @@ const DialogClientView* DialogDelegate::GetDialogClientView() const {
 }
 
 DialogClientView* DialogDelegate::GetDialogClientView() {
+  if (!GetWidget())
+    return nullptr;
   return GetWidget()->client_view()->AsDialogClientView();
 }
 
