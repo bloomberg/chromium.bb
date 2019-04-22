@@ -17,6 +17,7 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/storage_partition.h"
@@ -44,6 +45,19 @@ TermsOfServiceScreen::~TermsOfServiceScreen() {
     view_->SetDelegate(NULL);
 }
 
+void TermsOfServiceScreen::OnDecline() {
+  exit_callback_.Run(Result::DECLINED);
+}
+
+void TermsOfServiceScreen::OnAccept() {
+  exit_callback_.Run(Result::ACCEPTED);
+}
+
+void TermsOfServiceScreen::OnViewDestroyed(TermsOfServiceScreenView* view) {
+  if (view_ == view)
+    view_ = NULL;
+}
+
 void TermsOfServiceScreen::Show() {
   if (!view_)
     return;
@@ -63,19 +77,6 @@ void TermsOfServiceScreen::Show() {
 void TermsOfServiceScreen::Hide() {
   if (view_)
     view_->Hide();
-}
-
-void TermsOfServiceScreen::OnDecline() {
-  exit_callback_.Run(Result::DECLINED);
-}
-
-void TermsOfServiceScreen::OnAccept() {
-  exit_callback_.Run(Result::ACCEPTED);
-}
-
-void TermsOfServiceScreen::OnViewDestroyed(TermsOfServiceScreenView* view) {
-  if (view_ == view)
-    view_ = NULL;
 }
 
 void TermsOfServiceScreen::StartDownload() {

@@ -9,10 +9,42 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/screens/update_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace chromeos {
+
+class UpdateScreen;
+
+// Interface for dependency injection between WelcomeScreen and its actual
+// representation. Owned by UpdateScreen.
+class UpdateView {
+ public:
+  constexpr static OobeScreen kScreenId = OobeScreen::SCREEN_OOBE_UPDATE;
+
+  virtual ~UpdateView() {}
+
+  // Shows the contents of the screen.
+  virtual void Show() = 0;
+
+  // Hides the contents of the screen.
+  virtual void Hide() = 0;
+
+  // Binds |screen| to the view.
+  virtual void Bind(UpdateScreen* screen) = 0;
+
+  // Unbinds the screen from the view.
+  virtual void Unbind() = 0;
+
+  // Set the estimated time left, in seconds.
+  virtual void SetEstimatedTimeLeft(int value) = 0;
+  virtual void SetShowEstimatedTimeLeft(bool value) = 0;
+  virtual void SetUpdateCompleted(bool value) = 0;
+  virtual void SetShowCurtain(bool value) = 0;
+  virtual void SetProgressMessage(const base::string16& value) = 0;
+  virtual void SetProgress(int value) = 0;
+  virtual void SetRequiresPermissionForCellular(bool value) = 0;
+  virtual void SetCancelUpdateShortcutEnabled(bool value) = 0;
+};
 
 class UpdateScreenHandler : public UpdateView, public BaseScreenHandler {
  public:

@@ -7,7 +7,7 @@
 
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
-#include "chrome/browser/chromeos/login/screens/update_view.h"
+#include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {

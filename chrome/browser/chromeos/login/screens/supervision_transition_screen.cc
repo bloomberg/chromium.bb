@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/screens/supervision_transition_screen.h"
 
-#include "chrome/browser/chromeos/login/screens/supervision_transition_screen_view.h"
+#include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
 
 namespace chromeos {
 

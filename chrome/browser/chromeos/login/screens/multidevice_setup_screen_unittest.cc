@@ -8,7 +8,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "chrome/browser/chromeos/login/screens/multidevice_setup_screen_view.h"
+#include "chrome/browser/ui/webui/chromeos/login/multidevice_setup_screen_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

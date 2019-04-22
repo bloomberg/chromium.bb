@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
+#include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -68,7 +69,7 @@ void TermsOfServiceScreenHandler::DeclareLocalizedValues(
                IDS_TERMS_OF_SERVICE_SCREEN_ACCEPT_BUTTON);
 }
 
-void TermsOfServiceScreenHandler::SetDelegate(Delegate* screen) {
+void TermsOfServiceScreenHandler::SetDelegate(TermsOfServiceScreen* screen) {
   screen_ = screen;
 }
 
