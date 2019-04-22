@@ -648,8 +648,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
       Profile* profile) {
     TestBrowserWindow* browser_window = CreateTestBrowserWindowAura();
     new TestBrowserWindowOwner(browser_window);
-    return base::WrapUnique(
-        CreateBrowser(profile, Browser::TYPE_TABBED, false, browser_window));
+    return CreateBrowser(profile, Browser::TYPE_TABBED, false, browser_window);
   }
 
   // Create an uninitialized chrome launcher controller instance.

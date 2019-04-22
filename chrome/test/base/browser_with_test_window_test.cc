@@ -87,8 +87,8 @@ void BrowserWithTestWindowTest::SetUp() {
   // responsible for cleaning it up (usually by NativeWidget destruction).
   window_ = CreateBrowserWindow();
 
-  browser_.reset(
-      CreateBrowser(profile(), browser_type_, hosted_app_, window_.get()));
+  browser_ =
+      CreateBrowser(profile(), browser_type_, hosted_app_, window_.get());
 }
 
 void BrowserWithTestWindowTest::TearDown() {
@@ -195,7 +195,7 @@ BrowserWithTestWindowTest::CreateBrowserWindow() {
   return std::make_unique<TestBrowserWindow>();
 }
 
-Browser* BrowserWithTestWindowTest::CreateBrowser(
+std::unique_ptr<Browser> BrowserWithTestWindowTest::CreateBrowser(
     Profile* profile,
     Browser::Type browser_type,
     bool hosted_app,
@@ -208,7 +208,7 @@ Browser* BrowserWithTestWindowTest::CreateBrowser(
     params.type = browser_type;
   }
   params.window = browser_window;
-  return new Browser(params);
+  return std::make_unique<Browser>(params);
 }
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest(

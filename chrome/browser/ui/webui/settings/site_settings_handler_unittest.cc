@@ -1179,8 +1179,8 @@ class SiteSettingsHandlerInfobarTest : public BrowserWithTestWindowTest {
     web_ui()->ClearTrackedCalls();
 
     window2_ = CreateBrowserWindow();
-    browser2_ = base::WrapUnique(
-        CreateBrowser(profile(), browser()->type(), false, window2_.get()));
+    browser2_ =
+        CreateBrowser(profile(), browser()->type(), false, window2_.get());
 
     extensions::TestExtensionSystem* extension_system =
         static_cast<extensions::TestExtensionSystem*>(

@@ -174,11 +174,11 @@ class BrowserWithTestWindowTest : public testing::Test {
   virtual std::unique_ptr<BrowserWindow> CreateBrowserWindow();
 
   // Creates the browser given |profile|, |browser_type|, |hosted_app|, and
-  // |browser_window|. The caller owns the return value.
-  virtual Browser* CreateBrowser(Profile* profile,
-                                 Browser::Type browser_type,
-                                 bool hosted_app,
-                                 BrowserWindow* browser_window);
+  // |browser_window|.
+  virtual std::unique_ptr<Browser> CreateBrowser(Profile* profile,
+                                                 Browser::Type browser_type,
+                                                 bool hosted_app,
+                                                 BrowserWindow* browser_window);
 
 #if defined(TOOLKIT_VIEWS)
   views::TestViewsDelegate* test_views_delegate() {
