@@ -74,10 +74,7 @@ bool ConvertToUTF16WithSubstitutions(base::StringPiece text,
 }
 
 bool ToUpper(base::StringPiece16 str, base::string16* output) {
-  base::string16 str16;
-  str.CopyToString(&str16);
-  base::ScopedCFTypeRef<CFStringRef> cfstring(
-      base::SysUTF16ToCFStringRef(str16));
+  base::ScopedCFTypeRef<CFStringRef> cfstring(base::SysUTF16ToCFStringRef(str));
   base::ScopedCFTypeRef<CFMutableStringRef> mutable_cfstring(
       CFStringCreateMutableCopy(kCFAllocatorDefault, 0, cfstring.get()));
   CFStringUppercase(mutable_cfstring.get(), NULL);
