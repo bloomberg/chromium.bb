@@ -208,7 +208,7 @@ struct FloatingObjectHashTranslator {
   }
 };
 typedef ListHashSet<std::unique_ptr<FloatingObject>,
-                    4,
+                    /*inlineCapacity=*/256,
                     FloatingObjectHashFunctions>
     FloatingObjectSet;
 typedef FloatingObjectSet::const_iterator FloatingObjectSetIterator;

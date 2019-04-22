@@ -50,10 +50,10 @@ class TreeOrderedList final {
   void Clear() { nodes_.clear(); }
   wtf_size_t size() const { return nodes_.size(); }
 
-  using iterator = HeapListHashSet<Member<Node>, 32>::iterator;
-  using const_iterator = HeapListHashSet<Member<Node>, 32>::const_iterator;
+  using iterator = HeapListHashSet<Member<Node>>::iterator;
+  using const_iterator = HeapListHashSet<Member<Node>>::const_iterator;
   using const_reverse_iterator =
-      HeapListHashSet<Member<Node>, 32>::const_reverse_iterator;
+      HeapListHashSet<Member<Node>>::const_reverse_iterator;
 
   iterator begin() { return nodes_.begin(); }
   iterator end() { return nodes_.end(); }
@@ -66,7 +66,7 @@ class TreeOrderedList final {
   void Trace(Visitor*);
 
  private:
-  HeapListHashSet<Member<Node>, 32> nodes_;
+  HeapListHashSet<Member<Node>> nodes_;
   DISALLOW_COPY_AND_ASSIGN(TreeOrderedList);
 };
 
