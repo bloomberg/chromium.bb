@@ -177,29 +177,10 @@ TEST_F(ResourceSchedulerParamsManagerTest, VerifyAllDefaultParams) {
   }
 }
 
-// Verify that the params are parsed correctly when
-// kDelayRequestsOnMultiplexedConnections is enabled.
+// Verify that the params are parsed correctly.
 TEST_F(ResourceSchedulerParamsManagerTest,
        DelayRequestsOnMultiplexedConnections) {
   base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-  const std::string kTrialName = "TrialFoo";
-  const std::string kGroupName = "GroupFoo";  // Value not used
-  base::test::ScopedFeatureList scoped_feature_list;
-
-  scoped_refptr<base::FieldTrial> trial =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
-  std::map<std::string, std::string> params;
-  params["MaxEffectiveConnectionType"] = "2G";
-  ASSERT_TRUE(
-      base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-          kTrialName, kGroupName, params));
-
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->RegisterFieldTrialOverride(
-      features::kDelayRequestsOnMultiplexedConnections.name,
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
 
   ResourceSchedulerParamsManager resource_scheduler_params_manager;
 
@@ -230,9 +211,9 @@ TEST_F(ResourceSchedulerParamsManagerTest,
       EXPECT_EQ(0.0, resource_scheduler_params_manager
                          .GetParamsForEffectiveConnectionType(ect)
                          .non_delayable_weight);
-      EXPECT_FALSE(resource_scheduler_params_manager
-                       .GetParamsForEffectiveConnectionType(ect)
-                       .delay_requests_on_multiplexed_connections);
+      EXPECT_TRUE(resource_scheduler_params_manager
+                      .GetParamsForEffectiveConnectionType(ect)
+                      .delay_requests_on_multiplexed_connections);
       EXPECT_TRUE(resource_scheduler_params_manager
                       .GetParamsForEffectiveConnectionType(ect)
                       .max_queuing_time.has_value());
@@ -327,8 +308,8 @@ TEST_F(ResourceSchedulerParamsManagerTest, MaxQueuingTime) {
   }
 }
 
-// Verify that the params are parsed correctly when
-// kDelayRequestsOnMultiplexedConnections and kThrottleDelayable are enabled.
+// Verify that the params are parsed correctly when kThrottleDelayable is
+// enabled.
 TEST_F(ResourceSchedulerParamsManagerTest, MultipleFieldTrialsEnabled) {
   base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
   const std::string kTrialNameMultiplex = "TrialMultiplex";
@@ -337,20 +318,8 @@ TEST_F(ResourceSchedulerParamsManagerTest, MultipleFieldTrialsEnabled) {
 
   base::test::ScopedFeatureList scoped_feature_list;
 
-  // Configure kDelayRequestsOnMultiplexedConnections experiment params.
-  std::map<std::string, std::string> params_multiplex;
-  params_multiplex["MaxEffectiveConnectionType"] = "3G";
-  scoped_refptr<base::FieldTrial> trial_multiplex =
-      base::FieldTrialList::CreateFieldTrial(kTrialNameMultiplex, kGroupName);
-  ASSERT_TRUE(
-      base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-          kTrialNameMultiplex, kGroupName, params_multiplex));
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->RegisterFieldTrialOverride(
-      features::kDelayRequestsOnMultiplexedConnections.name,
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial_multiplex.get());
-
   // Configure kThrottleDelayable experiment params.
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   std::map<std::string, std::string> params_throttle_delayable;
   params_throttle_delayable["EffectiveConnectionType1"] = "3G";
   params_throttle_delayable["MaxDelayableRequests1"] = "12";
