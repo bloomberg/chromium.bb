@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_UI_ANDROID_AUTOFILL_CARD_EXPIRATION_DATE_FIX_FLOW_VIEW_ANDROID_H_
 
 #include <jni.h>
+#include <memory>
 
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "memory"
 
 namespace content {
 class WebContents;
