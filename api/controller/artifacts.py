@@ -12,6 +12,7 @@ import os
 from chromite.cbuildbot import commands
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
 
@@ -158,9 +159,8 @@ def BundlePinnedGuestImages(input_proto, output_proto):
                                                    output_dir)
 
   if archive is None:
-    cros_build_lib.Die(
-        'Could not bundle pinned guest images. '
-        'No relevant files found for %s.', target)
+    logging.warning('Found no pinned guest images for %s.', target)
+    return
 
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 

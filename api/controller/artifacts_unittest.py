@@ -118,11 +118,11 @@ class BundlePinnedGuestImagesTest(BundleTestCase):
                      [mock.call('/cros', 'target', '/tmp/artifacts')])
 
   def testBundlePinnedGuestImagesNoLogs(self):
-    """BundlePinnedGuestImages dies when no pinned images found."""
+    """BundlePinnedGuestImages does not die when no pinned images found."""
     self.PatchObject(commands, 'BuildPinnedGuestImagesTarball',
                      return_value=None)
-    with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundlePinnedGuestImages(self.input_proto, self.output_proto)
+    artifacts.BundlePinnedGuestImages(self.input_proto, self.output_proto)
+    self.assertFalse(self.output_proto.artifacts)
 
 
 class BundleFirmwareTest(BundleTestCase):
