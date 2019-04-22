@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.util.ArraySet;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -32,16 +33,18 @@ public abstract class ChildConnectionAllocator {
     @VisibleForTesting
     public interface ConnectionFactory {
         ChildProcessConnection createConnection(Context context, ComponentName serviceName,
-                boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle);
+                boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle,
+                String instanceName);
     }
 
     /** Default implementation of the ConnectionFactory that creates actual connections. */
     private static class ConnectionFactoryImpl implements ConnectionFactory {
         @Override
         public ChildProcessConnection createConnection(Context context, ComponentName serviceName,
-                boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle) {
+                boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle,
+                String instanceName) {
             return new ChildProcessConnection(context, serviceName, bindToCaller,
-                    bindAsExternalService, serviceBundle, null /* instanceName */);
+                    bindAsExternalService, serviceBundle, instanceName);
         }
     }
 
@@ -58,6 +61,19 @@ public abstract class ChildConnectionAllocator {
     private final boolean mUseStrongBinding;
 
     /* package */ ConnectionFactory mConnectionFactory = new ConnectionFactoryImpl();
+
+    private static void checkServiceExists(
+            Context context, String packageName, String serviceClassName) {
+        PackageManager packageManager = context.getPackageManager();
+        // Check that the service exists.
+        try {
+            // PackageManager#getServiceInfo() throws an exception if the service does not exist.
+            packageManager.getServiceInfo(
+                    new ComponentName(packageName, serviceClassName + "0"), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException("Illegal meta data value: the child service doesn't exist");
+        }
+    }
 
     /**
      * Factory method that retrieves the service name and number of service from the
@@ -83,18 +99,19 @@ public abstract class ChildConnectionAllocator {
             throw new RuntimeException("Illegal meta data value for number of child services");
         }
 
-        // Check that the service exists.
-        try {
-            // PackageManager#getServiceInfo() throws an exception if the service does not exist.
-            packageManager.getServiceInfo(
-                    new ComponentName(packageName, serviceClassName + "0"), 0);
-        } catch (PackageManager.NameNotFoundException e) {
-            throw new RuntimeException("Illegal meta data value: the child service doesn't exist");
-        }
+        checkServiceExists(context, packageName, serviceClassName);
 
         return new FixedSizeAllocatorImpl(launcherHandler, freeSlotCallback, packageName,
                 serviceClassName, bindToCaller, bindAsExternalService, useStrongBinding,
                 numServices);
+    }
+
+    public static ChildConnectionAllocator createVariableSize(Context context,
+            Handler launcherHandler, String packageName, String serviceClassName,
+            boolean bindToCaller, boolean bindAsExternalService, boolean useStrongBinding) {
+        checkServiceExists(context, packageName, serviceClassName);
+        return new VariableSizeAllocatorImpl(launcherHandler, packageName, serviceClassName,
+                bindToCaller, bindAsExternalService, useStrongBinding);
     }
 
     /**
@@ -204,7 +221,8 @@ public abstract class ChildConnectionAllocator {
         doFree(connection);
     }
 
-    // Can only be called once all slots are full, ie when allocate returns null.
+    // Can only be called once all slots are full, ie when allocate returns null. Note
+    // this should not be called in if created with createVariableSize.
     // The callback will be called when a slot becomes free, and should synchronous call
     // allocate to take the slot.
     public void queueAllocation(Runnable runnable) {
@@ -274,8 +292,9 @@ public abstract class ChildConnectionAllocator {
             assert mChildProcessConnections[slot] == null;
             ComponentName serviceName = new ComponentName(mPackageName, mServiceClassName + slot);
 
-            ChildProcessConnection connection = mConnectionFactory.createConnection(
-                    context, serviceName, mBindToCaller, mBindAsExternalService, serviceBundle);
+            ChildProcessConnection connection =
+                    mConnectionFactory.createConnection(context, serviceName, mBindToCaller,
+                            mBindAsExternalService, serviceBundle, null /* instanceName */);
             mChildProcessConnections[slot] = connection;
             Log.d(TAG, "Allocator allocated and bound a connection, name: %s, slot: %d",
                     mServiceClassName, slot);
@@ -337,6 +356,56 @@ public abstract class ChildConnectionAllocator {
         @Override
         public boolean anyConnectionAllocated() {
             return mFreeConnectionIndices.size() < mChildProcessConnections.length;
+        }
+    }
+
+    private static class VariableSizeAllocatorImpl extends ChildConnectionAllocator {
+        private final ArraySet<ChildProcessConnection> mAllocatedConnections = new ArraySet<>();
+        private int mNextInstance;
+
+        private VariableSizeAllocatorImpl(Handler launcherHandler, String packageName,
+                String serviceClassName, boolean bindToCaller, boolean bindAsExternalService,
+                boolean useStrongBinding) {
+            super(launcherHandler, packageName, serviceClassName + "0", bindToCaller,
+                    bindAsExternalService, useStrongBinding);
+        }
+
+        @Override
+        /* package */ ChildProcessConnection doAllocate(Context context, Bundle serviceBundle) {
+            ComponentName serviceName = new ComponentName(mPackageName, mServiceClassName);
+            String instanceName = Integer.toString(mNextInstance);
+            mNextInstance++;
+            ChildProcessConnection connection =
+                    mConnectionFactory.createConnection(context, serviceName, mBindToCaller,
+                            mBindAsExternalService, serviceBundle, instanceName);
+            assert connection != null;
+            mAllocatedConnections.add(connection);
+            return connection;
+        }
+
+        @Override
+        /* package */ void doFree(ChildProcessConnection connection) {
+            mAllocatedConnections.remove(connection);
+        }
+
+        @Override
+        /* package */ void doQueueAllocation(Runnable runnable) {
+            assert false;
+        }
+
+        @Override
+        public int getNumberOfServices() {
+            return -1;
+        }
+
+        @Override
+        public int allocatedConnectionsCountForTesting() {
+            return mAllocatedConnections.size();
+        }
+
+        @Override
+        public boolean anyConnectionAllocated() {
+            return mAllocatedConnections.size() > 0;
         }
     }
 }

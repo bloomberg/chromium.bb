@@ -53,7 +53,8 @@ public class SpareChildConnectionTest {
 
         @Override
         public ChildProcessConnection createConnection(Context context, ComponentName serviceName,
-                boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle) {
+                boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle,
+                String instanceName) {
             // We expect to create only one connection in these tests.
             assert mConnection == null;
             mConnection = new TestChildProcessConnection(

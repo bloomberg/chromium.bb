@@ -63,7 +63,8 @@ public class ChildConnectionAllocatorTest {
 
         @Override
         public ChildProcessConnection createConnection(Context context, ComponentName serviceName,
-                boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle) {
+                boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle,
+                String instanceName) {
             mLastServiceName = serviceName;
             if (mConnection == null) {
                 mConnection = mock(ChildProcessConnection.class);
