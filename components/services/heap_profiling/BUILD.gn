@@ -4,10 +4,8 @@
 
 static_library("heap_profiling") {
   sources = [
-    "allocation_event.cc",
-    "allocation_event.h",
-    "backtrace.cc",
-    "backtrace.h",
+    "allocation.cc",
+    "allocation.h",
     "connection_manager.cc",
     "connection_manager.h",
     "heap_profiling_service.cc",
@@ -26,7 +24,6 @@ static_library("heap_profiling") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "backtrace_unittest.cc",
     "json_exporter_unittest.cc",
   ]
   deps = [

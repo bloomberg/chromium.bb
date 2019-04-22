@@ -5,6 +5,7 @@
 #include "components/services/heap_profiling/json_exporter.h"
 
 #include <map>
+#include <unordered_map>
 
 #include "base/containers/adapters.h"
 #include "base/format_macros.h"
@@ -20,7 +21,10 @@ namespace heap_profiling {
 namespace {
 
 // Maps strings to integers for the JSON string table.
-using StringTable = std::map<std::string, size_t>;
+using StringTable = std::unordered_map<std::string, size_t>;
+
+// Maps allocation site to node_id of the top frame.
+using AllocationToNodeId = std::unordered_map<const AllocationSite*, size_t>;
 
 constexpr uint32_t kAllocatorCount =
     static_cast<uint32_t>(AllocatorType::kMaxValue) + 1;
@@ -46,32 +50,6 @@ struct BacktraceNode {
 
 using BacktraceTable = std::map<BacktraceNode, size_t>;
 
-// Used as a temporary map key to uniquify an allocation with a given context
-// and stack. No backtraces are created or destroyed during the lifetime of that
-// structure. Therefore it's safe to use a raw pointer since backtraces are
-// uniquified, this does pointer comparisons on the backtrace to give a stable
-// ordering, even if that ordering has no intrinsic meaning.
-struct UniqueAlloc {
- public:
-  UniqueAlloc(const Backtrace* bt, int ctx_id)
-      : backtrace(bt), context_id(ctx_id) {}
-
-  bool operator<(const UniqueAlloc& other) const {
-    return std::tie(backtrace, context_id) <
-           std::tie(other.backtrace, other.context_id);
-  }
-
-  const Backtrace* backtrace = nullptr;
-  const int context_id = 0;
-};
-
-struct UniqueAllocMetrics {
-  size_t size = 0;
-  size_t count = 0;
-};
-
-using UniqueAllocationMap = std::map<UniqueAlloc, UniqueAllocMetrics>;
-
 // The hardcoded ID for having no context for an allocation.
 constexpr int kUnknownTypeId = 0;
 
@@ -92,11 +70,17 @@ const char* StringForAllocatorType(uint32_t type) {
 // Writes the top-level allocators section. This section is used by the tracing
 // UI to show a small summary for each allocator. It's necessary as a
 // placeholder to allow the stack-viewing UI to be shown.
-//
-// Each array should be the number of allocators long.
-void WriteAllocatorsSummary(size_t total_size[],
-                            size_t total_count[],
+void WriteAllocatorsSummary(const AllocationMap& allocations,
                             std::ostream& out) {
+  // Aggregate stats for each allocator type.
+  size_t total_size[kAllocatorCount] = {0};
+  size_t total_count[kAllocatorCount] = {0};
+  for (const auto& alloc_pair : allocations) {
+    uint32_t index = static_cast<uint32_t>(alloc_pair.first.allocator);
+    total_size[index] += alloc_pair.second.size;
+    total_count[index] += alloc_pair.second.count;
+  }
+
   out << "\"allocators\":{\n";
   for (uint32_t i = 0; i < kAllocatorCount; i++) {
     const char* alloc_type = StringForAllocatorType(i);
@@ -169,56 +153,44 @@ void WriteMemoryMaps(const ExportParams& params, std::ostream& out) {
 size_t AddOrGetString(const std::string& str,
                       StringTable* string_table,
                       ExportParams* params) {
-  auto result = string_table->emplace(str, params->next_id++);
-  // "result.first" is an iterator into the map.
-  return result.first->second;
+  return string_table->emplace(str, params->next_id++).first->second;
 }
 
-// Processes the context information needed for the give set of allocations.
+// Processes the context information.
 // Strings are added for each referenced context and a mapping between
 // context IDs and string IDs is filled in for each.
-void FillContextStrings(const UniqueAllocationMap& allocations,
-                        ExportParams* params,
+void FillContextStrings(ExportParams* params,
                         StringTable* string_table,
-                        std::map<int, size_t>* context_to_string_map) {
-  std::set<int> used_context;
-  for (const auto& alloc : allocations)
-    used_context.insert(alloc.first.context_id);
-
-  if (used_context.find(kUnknownTypeId) != used_context.end()) {
-    // Hard code a string for the unknown context type.
-    context_to_string_map->emplace(
-        kUnknownTypeId, AddOrGetString("[unknown]", string_table, params));
-  }
-
+                        std::map<int, size_t>* context_to_string_id_map) {
   // The context map is backwards from what we need, so iterate through the
   // whole thing and see which ones are used.
   for (const auto& context : params->context_map) {
-    if (used_context.find(context.second) != used_context.end()) {
-      size_t string_id = AddOrGetString(context.first, string_table, params);
-      context_to_string_map->emplace(context.second, string_id);
-    }
+    size_t string_id = AddOrGetString(context.first, string_table, params);
+    context_to_string_id_map->emplace(context.second, string_id);
   }
+
+  // Hard code a string for the unknown context type.
+  context_to_string_id_map->emplace(
+      kUnknownTypeId, AddOrGetString("[unknown]", string_table, params));
 }
 
 size_t AddOrGetBacktraceNode(BacktraceNode node,
                              BacktraceTable* backtrace_table,
                              ExportParams* params) {
-  auto result = backtrace_table->emplace(std::move(node), params->next_id++);
-  // "result.first" is an iterator into the map.
-  return result.first->second;
+  return backtrace_table->emplace(std::move(node), params->next_id++)
+      .first->second;
 }
 
 // Returns the index into nodes of the node to reference for this stack. That
 // node will reference its parent node, etc. to allow the full stack to
 // be represented.
-size_t AppendBacktraceStrings(const Backtrace& backtrace,
+size_t AppendBacktraceStrings(const AllocationSite& alloc,
                               BacktraceTable* backtrace_table,
                               StringTable* string_table,
                               ExportParams* params) {
-  int parent = -1;
+  size_t parent = BacktraceNode::kNoParent;
   // Addresses must be outputted in reverse order.
-  for (const Address addr : base::Reversed(backtrace.addrs())) {
+  for (const Address addr : base::Reversed(alloc.stack)) {
     size_t sid;
     auto it = params->mapped_strings.find(addr);
     if (it != params->mapped_strings.end()) {
@@ -310,10 +282,14 @@ void WriteTypeNodes(const std::map<int, size_t>& type_to_string,
 
 // Writes the number of matching allocations array which looks like:
 //   "counts":[1, 1, 2]
-void WriteCounts(const UniqueAllocationMap& allocations, std::ostream& out) {
+void WriteCounts(const AllocationMap& allocations,
+                 int allocator,
+                 std::ostream& out) {
   out << "\"counts\":[";
   bool first_time = true;
   for (const auto& cur : allocations) {
+    if (static_cast<int>(cur.first.allocator) != allocator)
+      continue;
     if (!first_time)
       out << ",";
     else
@@ -325,10 +301,14 @@ void WriteCounts(const UniqueAllocationMap& allocations, std::ostream& out) {
 
 // Writes the total sizes of each allocation which looks like:
 //   "sizes":[32, 64, 12]
-void WriteSizes(const UniqueAllocationMap& allocations, std::ostream& out) {
+void WriteSizes(const AllocationMap& allocations,
+                int allocator,
+                std::ostream& out) {
   out << "\"sizes\":[";
   bool first_time = true;
   for (const auto& cur : allocations) {
+    if (static_cast<int>(cur.first.allocator) != allocator)
+      continue;
     if (!first_time)
       out << ",";
     else
@@ -340,10 +320,14 @@ void WriteSizes(const UniqueAllocationMap& allocations, std::ostream& out) {
 
 // Writes the types array of integers which looks like:
 //   "types":[0, 0, 1]
-void WriteTypes(const UniqueAllocationMap& allocations, std::ostream& out) {
+void WriteTypes(const AllocationMap& allocations,
+                int allocator,
+                std::ostream& out) {
   out << "\"types\":[";
   bool first_time = true;
   for (const auto& cur : allocations) {
+    if (static_cast<int>(cur.first.allocator) != allocator)
+      continue;
     if (!first_time)
       out << ",";
     else
@@ -356,18 +340,20 @@ void WriteTypes(const UniqueAllocationMap& allocations, std::ostream& out) {
 // Writes the nodes array which indexes for each allocation into the maps nodes
 // array written above. It looks like:
 //   "nodes":[1, 5, 10]
-void WriteAllocatorNodes(const UniqueAllocationMap& allocations,
-                         const std::map<const Backtrace*, size_t>& backtraces,
+void WriteAllocatorNodes(const AllocationMap& allocations,
+                         int allocator,
+                         const AllocationToNodeId& alloc_to_node_id,
                          std::ostream& out) {
   out << "\"nodes\":[";
   bool first_time = true;
   for (const auto& cur : allocations) {
+    if (static_cast<int>(cur.first.allocator) != allocator)
+      continue;
     if (!first_time)
       out << ",";
     else
       first_time = false;
-    auto found = backtraces.find(cur.first.backtrace);
-    out << found->second;
+    out << alloc_to_node_id.at(&cur.first);
   }
   out << "]";
 }
@@ -389,98 +375,27 @@ void ExportMemoryMapsAndV2StackTraceToJSON(ExportParams* params,
   out << R"("level_of_detail": "detailed")"
       << ",\n";
 
-  // Aggregate stats for each allocator type.
-  size_t total_size[kAllocatorCount] = {0};
-  size_t total_count[kAllocatorCount] = {0};
-  UniqueAllocationMap filtered_allocations[kAllocatorCount];
-  for (const auto& alloc_pair : params->allocs) {
-    uint32_t allocator_index =
-        static_cast<uint32_t>(alloc_pair.first.allocator());
-    size_t alloc_count = alloc_pair.second;
-    size_t alloc_size = alloc_pair.first.size();
-    size_t alloc_total_size = alloc_size * alloc_count;
-
-    // If allocations were sampled, then we need to desample to return accurate
-    // results.
-    if (alloc_size < params->sampling_rate && alloc_size != 0) {
-      // To desample, we need to know the probability P that an allocation will
-      // be sampled. Once we know P, we still have to deal with discretization.
-      // Let's say that there's 1 allocation with P=0.85. Should we report 1 or
-      // 2 allocations? Should we report a fudged size (size / 0.85), or a
-      // discreted size, e.g. (1 * size) or (2 * size)? There are tradeoffs.
-      //
-      // We choose to emit a fudged size, which will return a more accurate
-      // total allocation size, but less accurate per-allocation size.
-      //
-      // The aggregate probability that an allocation will be sampled is
-      // alloc_size / sampling_rate. For a more detailed treatise, see
-      // https://bugs.chromium.org/p/chromium/issues/detail?id=810748#c4
-      float desampling_multiplier = static_cast<float>(params->sampling_rate) /
-                                    static_cast<float>(alloc_size);
-      alloc_count *= desampling_multiplier;
-      alloc_total_size *= desampling_multiplier;
-    }
-
-    total_size[allocator_index] += alloc_total_size;
-    total_count[allocator_index] += alloc_count;
-
-    UniqueAlloc unique_alloc(alloc_pair.first.backtrace(),
-                             alloc_pair.first.context_id());
-    UniqueAllocMetrics& unique_alloc_metrics =
-        filtered_allocations[allocator_index][unique_alloc];
-    unique_alloc_metrics.size += alloc_total_size;
-    unique_alloc_metrics.count += alloc_count;
-  }
-
-  // Filter irrelevant allocations.
-  // TODO(crbug:763595): Leave placeholders for pruned allocations.
-  for (uint32_t i = 0; i < kAllocatorCount; i++) {
-    for (auto alloc = filtered_allocations[i].begin();
-         alloc != filtered_allocations[i].end();) {
-      if (alloc->second.size < params->min_size_threshold &&
-          alloc->second.count < params->min_count_threshold) {
-        alloc = filtered_allocations[i].erase(alloc);
-      } else {
-        ++alloc;
-      }
-    }
-  }
-
-  WriteAllocatorsSummary(total_size, total_count, out);
+  WriteAllocatorsSummary(params->allocs, out);
   WriteHeapsV2Header(out);
 
   // Output Heaps_V2 format version. Currently "1" is the only valid value.
   out << "\"version\": 1,\n";
 
-  StringTable string_table;
-
   // Put all required context strings in the string table and generate a
   // mapping from allocation context_id to string ID.
-  std::map<int, size_t> context_to_string_map;
-  for (uint32_t i = 0; i < kAllocatorCount; i++) {
-    FillContextStrings(filtered_allocations[i], params, &string_table,
-                       &context_to_string_map);
-  }
+  StringTable string_table;
+  std::map<int, size_t> context_to_string_id_map;
+  FillContextStrings(params, &string_table, &context_to_string_id_map);
 
-  // Find all backtraces referenced by the set and not filtered. The backtrace
-  // storage will contain more stacks than we want to write out (it will refer
-  // to all processes, while we're only writing one). So do those only on
-  // demand.
-  //
-  // The map maps backtrace keys to node IDs (computed below).
-  std::map<const Backtrace*, size_t> backtraces;
-  for (size_t i = 0; i < kAllocatorCount; i++) {
-    for (const auto& alloc : filtered_allocations[i])
-      backtraces.emplace(alloc.first.backtrace, 0);
-  }
-
-  // Write each backtrace, converting the string for the stack entry to string
-  // IDs. The backtrace -> node ID will be filled in at this time.
+  AllocationToNodeId alloc_to_node_id;
   BacktraceTable nodes;
-  VLOG(1) << "Number of backtraces " << backtraces.size();
-  for (auto& bt : backtraces)
-    bt.second =
-        AppendBacktraceStrings(*bt.first, &nodes, &string_table, params);
+  // For each backtrace, converting the string for the stack entry to string
+  // IDs. The backtrace -> node ID will be filled in at this time.
+  for (const auto& alloc : params->allocs) {
+    size_t node_id =
+        AppendBacktraceStrings(alloc.first, &nodes, &string_table, params);
+    alloc_to_node_id.emplace(&alloc.first, node_id);
+  }
 
   // Maps section.
   out << "\"maps\": {\n";
@@ -488,7 +403,7 @@ void ExportMemoryMapsAndV2StackTraceToJSON(ExportParams* params,
   out << ",\n";
   WriteMapNodes(nodes, out);
   out << ",\n";
-  WriteTypeNodes(context_to_string_map, out);
+  WriteTypeNodes(context_to_string_id_map, out);
   out << "},\n";  // End of maps section.
 
   // Allocators section.
@@ -496,13 +411,13 @@ void ExportMemoryMapsAndV2StackTraceToJSON(ExportParams* params,
   for (uint32_t i = 0; i < kAllocatorCount; i++) {
     out << "  \"" << StringForAllocatorType(i) << "\":{\n    ";
 
-    WriteCounts(filtered_allocations[i], out);
+    WriteCounts(params->allocs, i, out);
     out << ",\n    ";
-    WriteSizes(filtered_allocations[i], out);
+    WriteSizes(params->allocs, i, out);
     out << ",\n    ";
-    WriteTypes(filtered_allocations[i], out);
+    WriteTypes(params->allocs, i, out);
     out << ",\n    ";
-    WriteAllocatorNodes(filtered_allocations[i], backtraces, out);
+    WriteAllocatorNodes(params->allocs, i, alloc_to_node_id, out);
     out << "\n  }";
 
     // Comma every time but the last.

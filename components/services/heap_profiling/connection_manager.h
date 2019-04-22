@@ -18,7 +18,7 @@
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "components/services/heap_profiling/allocation_event.h"
+#include "components/services/heap_profiling/allocation.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_service.mojom.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
@@ -78,9 +78,8 @@ class ConnectionManager {
       base::ProcessId pid,
       mojom::ProcessType process_type,
       bool strip_path_from_mapped_files,
-      uint32_t sampling_rate,
       bool success,
-      AllocationCountMap counts,
+      AllocationMap counts,
       ContextMap context,
       AddressToStringMap mapped_strings);
 

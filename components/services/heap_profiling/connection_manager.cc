@@ -13,11 +13,6 @@
 
 namespace heap_profiling {
 
-namespace {
-const size_t kMinSizeThreshold = 16 * 1024;
-const size_t kMinCountThreshold = 1024;
-}  // namespace
-
 // Tracking information for DumpProcessForTracing(). This struct is
 // refcounted since there will be many background thread calls (one for each
 // AllocationTracker) and the callback is only issued when each has
@@ -188,10 +183,9 @@ void ConnectionManager::HeapProfileRetrieved(
     bool strip_path_from_mapped_files,
     uint32_t sampling_rate,
     mojom::HeapProfilePtr profile) {
-  AllocationCountMap counts;
+  AllocationMap allocations;
   ContextMap context_map;
   AddressToStringMap string_map;
-  BacktraceStorage backtrace_storage;
 
   bool success = true;
   for (const mojom::HeapProfileSamplePtr& sample : profile->samples) {
@@ -212,12 +206,43 @@ void ConnectionManager::HeapProfileRetrieved(
                                 static_cast<int>(context_map.size() + 1))
                        .first->second;
     }
+
+    size_t alloc_size = sample->size;
+    size_t alloc_count = 1;
+
+    // If allocations were sampled, then we need to desample to return accurate
+    // results.
+    // TODO(alph): Move it closer to the the sampler, so other components
+    // wouldn't care about the math.
+    if (alloc_size < sampling_rate && alloc_size != 0) {
+      // To desample, we need to know the probability P that an allocation will
+      // be sampled. Once we know P, we still have to deal with discretization.
+      // Let's say that there's 1 allocation with P=0.85. Should we report 1 or
+      // 2 allocations? Should we report a fudged size (size / 0.85), or a
+      // discreted size, e.g. (1 * size) or (2 * size)? There are tradeoffs.
+      //
+      // We choose to emit a fudged size, which will return a more accurate
+      // total allocation size, but less accurate per-allocation size.
+      //
+      // The aggregate probability that an allocation will be sampled is
+      // alloc_size / sampling_rate. For a more detailed treatise, see
+      // https://bugs.chromium.org/p/chromium/issues/detail?id=810748#c4
+      float desampling_multiplier =
+          static_cast<float>(sampling_rate) / static_cast<float>(alloc_size);
+      alloc_count *= desampling_multiplier;
+      alloc_size *= desampling_multiplier;
+    }
+
     std::vector<Address> stack(sample->stack.begin(), sample->stack.end());
-    const Backtrace* backtrace =
-        &*backtrace_storage.insert(Backtrace(std::move(stack))).first;
-    AllocationEvent alloc(sample->allocator, Address(0), sample->size,
-                          backtrace, context_id);
-    ++counts[alloc];
+    AllocationMetrics& metrics =
+        allocations
+            .emplace(std::piecewise_construct,
+                     std::forward_as_tuple(sample->allocator, std::move(stack),
+                                           context_id),
+                     std::forward_as_tuple())
+            .first->second;
+    metrics.size += alloc_size;
+    metrics.count += alloc_count;
   }
 
   for (const auto& str : profile->strings) {
@@ -230,8 +255,8 @@ void ConnectionManager::HeapProfileRetrieved(
 
   DCHECK(success);
   DoDumpOneProcessForTracing(std::move(tracking), pid, process_type,
-                             strip_path_from_mapped_files, sampling_rate,
-                             success, std::move(counts), std::move(context_map),
+                             strip_path_from_mapped_files, success,
+                             std::move(allocations), std::move(context_map),
                              std::move(string_map));
 }
 
@@ -240,9 +265,8 @@ void ConnectionManager::DoDumpOneProcessForTracing(
     base::ProcessId pid,
     mojom::ProcessType process_type,
     bool strip_path_from_mapped_files,
-    uint32_t sampling_rate,
     bool success,
-    AllocationCountMap counts,
+    AllocationMap counts,
     ContextMap context,
     AddressToStringMap mapped_strings) {
   // All code paths through here must issue the callback when waiting_responses
@@ -261,11 +285,8 @@ void ConnectionManager::DoDumpOneProcessForTracing(
   params.context_map = std::move(context);
   params.mapped_strings = std::move(mapped_strings);
   params.process_type = process_type;
-  params.min_size_threshold = kMinSizeThreshold;
-  params.min_count_threshold = kMinCountThreshold;
   params.strip_path_from_mapped_files = strip_path_from_mapped_files;
   params.next_id = next_id_;
-  params.sampling_rate = sampling_rate;
 
   auto it = tracking->vm_regions.find(pid);
   if (it != tracking->vm_regions.end())
