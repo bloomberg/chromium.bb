@@ -41,6 +41,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -549,6 +550,7 @@ class PreviewsLitePageServerBrowserTest
   }
   const GURL& client_redirect_url() const { return client_redirect_url_; }
   const GURL& subframe_url() const { return subframe_url_; }
+  uint64_t got_page_id() const { return got_page_id_; }
   int subresources_requested() const { return subresources_requested_; }
 
   void WaitForPingback() {
@@ -683,6 +685,12 @@ class PreviewsLitePageServerBrowserTest
           net::HttpStatusCode::HTTP_PROXY_AUTHENTICATION_REQUIRED);
       return response;
     }
+    net::HttpRequestHeaders headers;
+    headers.AddHeaderFromString("chrome-proxy: " +
+                                request.headers.find("chrome-proxy")->second);
+    got_page_id_ = data_reduction_proxy::DataReductionProxyRequestOptions::
+                       GetPageIdFromRequestHeaders(headers)
+                           .value();
 
     if (request.GetURL().spec().find("redirect_loop") != std::string::npos) {
       response->set_code(net::HTTP_TEMPORARY_REDIRECT);
@@ -801,6 +809,7 @@ class PreviewsLitePageServerBrowserTest
   GURL subframe_url_;
   GURL previews_server_url_;
   GURL slow_http_url_;
+  uint64_t got_page_id_ = 0;
   int subresources_requested_ = 0;
   base::OnceClosure waiting_for_pingback_closure_;
 };
@@ -1452,35 +1461,49 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
       ->data_reduction_proxy_service()
       ->SetPingbackClientForTesting(pingback_client);
 
-  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
-  VerifyPreviewLoaded();
+  // This test should pass whether or not
+  // |kDataReductionProxyPopulatePreviewsPageIDToPingback| is enabled.
+  for (const bool drp_pageid_feature_enabled : {false, true}) {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatureState(
+        data_reduction_proxy::features::
+            kDataReductionProxyPopulatePreviewsPageIDToPingback,
+        drp_pageid_feature_enabled);
 
-  PreviewsUITabHelper* ui_tab_helper =
-      PreviewsUITabHelper::FromWebContents(GetWebContents());
-  previews::PreviewsUserData* previews_data =
-      ui_tab_helper->previews_user_data();
-  // Grab the page id and session now because they may change after the reload.
-  uint64_t expected_page_id = previews_data->server_lite_page_info()->page_id;
-  std::string expected_session_key =
-      previews_data->server_lite_page_info()->drp_session_key;
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+    VerifyPreviewLoaded();
 
-  // Starting a new page load will send a pingback for the previous page load.
-  GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
-  pingback_client->WaitForPingback();
+    PreviewsUITabHelper* ui_tab_helper =
+        PreviewsUITabHelper::FromWebContents(GetWebContents());
+    previews::PreviewsUserData* previews_data =
+        ui_tab_helper->previews_user_data();
+    // Grab the page id and session now because they may change after the
+    // reload.
+    uint64_t expected_page_id = previews_data->server_lite_page_info()->page_id;
+    std::string expected_session_key =
+        previews_data->server_lite_page_info()->drp_session_key;
 
-  data_reduction_proxy::DataReductionProxyData* data = pingback_client->data();
-  EXPECT_TRUE(data->used_data_reduction_proxy());
-  EXPECT_TRUE(data->lite_page_received());
-  EXPECT_FALSE(data->lofi_policy_received());
-  EXPECT_FALSE(data->lofi_received());
-  EXPECT_FALSE(data->was_cached_data_reduction_proxy_response());
+    // Starting a new page load will send a pingback for the previous page load.
+    GetWebContents()->GetController().Reload(content::ReloadType::NORMAL,
+                                             false);
+    pingback_client->WaitForPingback();
 
-  // TODO(crbug.com/952523): Fix and remove this early return.
-  if (GetParam())
-    return;
+    data_reduction_proxy::DataReductionProxyData* data =
+        pingback_client->data();
+    EXPECT_TRUE(data->used_data_reduction_proxy());
+    EXPECT_TRUE(data->lite_page_received());
+    EXPECT_FALSE(data->lofi_policy_received());
+    EXPECT_FALSE(data->lofi_received());
+    EXPECT_FALSE(data->was_cached_data_reduction_proxy_response());
 
-  EXPECT_EQ(data->session_key(), expected_session_key);
-  EXPECT_EQ(data->page_id().value(), expected_page_id);
+    // TODO(crbug.com/952523): Fix and remove this early exit.
+    if (GetParam())
+      continue;
+
+    EXPECT_EQ(data->page_id().value(), expected_page_id);
+    EXPECT_EQ(data->page_id().value(), got_page_id());
+    EXPECT_EQ(data->session_key(), expected_session_key);
+  }
 }
 
 class PreviewsLitePageServerTimeoutBrowserTest

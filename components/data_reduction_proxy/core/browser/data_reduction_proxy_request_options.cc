@@ -300,6 +300,14 @@ DataReductionProxyRequestOptions::GetPageIdFromRequestHeaders(
               &page_id)) {
         return page_id;
       }
+
+      // Also attempt parsing the page_id as a hex string.
+      if (base::HexStringToUInt64(
+              base::TrimWhitespaceASCII(kv_pair.second, base::TRIM_ALL)
+                  .as_string(),
+              &page_id)) {
+        return page_id;
+      }
     }
   }
   return base::nullopt;
