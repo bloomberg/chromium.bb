@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #import "base/numerics/safe_conversions.h"
@@ -1033,6 +1034,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 - (void)openTabsFromSessionSectionIdentifier:(NSInteger)sectionIdentifier {
+  base::RecordAction(base::UserMetricsAction(
+      "MobileRecentTabManagerOpenAllTabsFromOtherDevice"));
   NSInteger section =
       [self.tableViewModel sectionForSectionIdentifier:sectionIdentifier];
   synced_sessions::DistantSession const* session =
@@ -1045,6 +1048,9 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     params.in_incognito = self.isIncognito;
     UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
   }
+  UMA_HISTOGRAM_COUNTS_100(
+      "Mobile.RecentTabsManager.TotalTabsFromOtherDevicesOpenAll",
+      session->tabs.size());
   [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
 
