@@ -850,8 +850,10 @@ main(int argc, char *argv[])
 		fds[1].events = POLLIN;
 
 		n = poll(fds, 2, -1);
-		if (n < 0)
-			error(0, errno, "poll failed");
+		if (n < 0) {
+			fprintf(stderr, "poll failed: %s\n", strerror(errno));
+			return -1;
+		}
 		if (fds[0].revents & POLLIN)
 			handle_socket_msg(&wl);
 		if (fds[1].revents)
