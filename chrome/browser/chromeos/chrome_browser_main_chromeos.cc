@@ -287,10 +287,9 @@ namespace internal {
 class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters) {
-    if (!::features::IsMultiProcessMash()) {
-      // In Mash, power policy is sent to powerd by ash.
+    // In Mash, power policy is sent to powerd by ash.
+    if (!::features::IsMultiProcessMash())
       PowerPolicyController::Initialize(PowerManagerClient::Get());
-    }
 
     dbus::Bus* system_bus = DBusThreadManager::Get()->IsUsingFakes()
                                 ? nullptr
@@ -571,10 +570,8 @@ int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
   // DBus is initialized in ChromeMainDelegate::PostEarlyInitialization().
   CHECK(DBusThreadManager::IsInitialized());
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kMojoDBusRelay)) {
-    power_manager_mojo_client_ =
-        std::make_unique<chromeos::PowerManagerMojoClient>();
-  }
+  if (base::FeatureList::IsEnabled(features::kMojoDBusRelay))
+    power_manager_mojo_client_ = std::make_unique<PowerManagerMojoClient>();
 
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       parsed_command_line().HasSwitch(
@@ -617,7 +614,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 
 void ChromeBrowserMainPartsChromeos::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
-  if (base::FeatureList::IsEnabled(chromeos::features::kMojoDBusRelay)) {
+  if (base::FeatureList::IsEnabled(features::kMojoDBusRelay)) {
     connection->GetConnector()->BindInterface(
         ash::mojom::kServiceName, power_manager_mojo_client_->interface_ptr());
     power_manager_mojo_client_->InitAfterInterfaceBound();
@@ -687,7 +684,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   assistant_client_ = std::make_unique<AssistantClient>();
 #endif
 
-  chromeos::ResourceReporter::GetInstance()->StartMonitoring(
+  ResourceReporter::GetInstance()->StartMonitoring(
       task_manager::TaskManagerInterface::GetTaskManager());
 
   discover_manager_ = std::make_unique<DiscoverManager>();
@@ -912,7 +909,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just after CreateProfile().
 
-  if (chromeos::ProfileHelper::IsSigninProfile(profile())) {
+  if (ProfileHelper::IsSigninProfile(profile())) {
     // Flush signin profile if it is just created (new device or after recovery)
     // to ensure it is correctly persisted.
     if (profile()->IsNewProfile())
@@ -921,7 +918,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     // Force loading of signin profile if it was not loaded before. It is
     // possible when we are restoring session or skipping login screen for some
     // other reason.
-    chromeos::ProfileHelper::GetSigninProfile();
+    ProfileHelper::GetSigninProfile();
   }
 
   BootTimesRecorder::Get()->OnChromeProcessStart();
@@ -969,7 +966,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
       std::make_unique<FreezerCgroupProcessManager>());
 
   power_metrics_reporter_ = std::make_unique<PowerMetricsReporter>(
-      chromeos::PowerManagerClient::Get(), g_browser_process->local_state());
+      PowerManagerClient::Get(), g_browser_process->local_state());
 
   g_browser_process->platform_part()->InitializeAutomaticRebootManager();
   user_removal_manager::RemoveUsersIfNeeded();
@@ -998,7 +995,7 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 
   // Start the external metrics service, which collects metrics from Chrome OS
   // and passes them to the browser process.
-  external_metrics_ = new chromeos::ExternalMetrics;
+  external_metrics_ = new ExternalMetrics;
   external_metrics_->Start();
 
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
@@ -1006,7 +1003,7 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 
   if (ui::ShouldDefaultToNaturalScroll()) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kNaturalScrollDefault);
+        switches::kNaturalScrollDefault);
     system::InputDeviceSettings::Get()->SetTapToClick(true);
   }
 
@@ -1064,16 +1061,15 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
     cros_usb_detector_->ConnectToDeviceManager();
   }
 
-  dark_resume_controller_ =
-      std::make_unique<chromeos::system::DarkResumeController>(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector());
+  dark_resume_controller_ = std::make_unique<system::DarkResumeController>(
+      content::ServiceManagerConnection::GetForProcess()->GetConnector());
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
 
 // Shut down services before the browser process, etc are destroyed.
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
-  chromeos::ResourceReporter::GetInstance()->StopMonitoring();
+  ResourceReporter::GetInstance()->StopMonitoring();
 
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
@@ -1142,7 +1138,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   system::StatisticsProvider::GetInstance()->Shutdown();
 
-  chromeos::DemoSession::ShutDownIfInitialized();
+  DemoSession::ShutDownIfInitialized();
 
   // Inform |NetworkCertLoader| that it should not notify observers anymore.
   // TODO(https://crbug.com/894867): Remove this when the root cause of the
