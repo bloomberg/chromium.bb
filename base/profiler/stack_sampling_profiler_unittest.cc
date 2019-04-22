@@ -112,15 +112,23 @@ class TargetThread : public PlatformThread::Delegate {
   // execution.
   void SignalThreadToFinish();
 
+  // A function which invokes one of the stack setup functions below. This is
+  // used to place a frame on the stack that we can identify before those calls,
+  // so that we can check that unwinds from them have succeeded.
+  //
+  // This and the following functions return a program counter value near the
+  // end of the function. They can be invoked with null parameters to just
+  // return the program counter.  The functions are static so that we can get a
+  // straightforward address for them in the tests below, rather than dealing
+  // with the complexity of a member function pointer representation.
+  static const void* InvokeSetupFunction(
+      WaitableEvent* thread_started_event,
+      WaitableEvent* finish_event,
+      const StackConfiguration* stack_config);
+
   // This function is guaranteed to be executing between calls to
   // WaitForThreadStart() and SignalThreadToFinish() when invoked with
-  // |thread_started_event_| and |finish_event_|. Returns a program counter
-  // value near the end of the function. May be invoked with null WaitableEvents
-  // to just return the program counter.
-  //
-  // This function is static so that we can get a straightforward address
-  // for it in one of the tests below, rather than dealing with the complexity
-  // of a member function pointer representation.
+  // |thread_started_event_| and |finish_event_|.
   static const void* SignalAndWaitUntilSignaled(
       WaitableEvent* thread_started_event,
       WaitableEvent* finish_event,
@@ -172,21 +180,7 @@ TargetThread::TargetThread(const StackConfiguration& stack_config)
 
 void TargetThread::ThreadMain() {
   id_ = PlatformThread::CurrentId();
-  switch (stack_config_.config) {
-    case StackConfiguration::NORMAL:
-      SignalAndWaitUntilSignaled(&thread_started_event_, &finish_event_,
-                                 &stack_config_);
-      break;
-
-    case StackConfiguration::WITH_ALLOCA:
-      CallWithAlloca(&thread_started_event_, &finish_event_, &stack_config_);
-      break;
-
-    case StackConfiguration::WITH_OTHER_LIBRARY:
-      CallThroughOtherLibrary(&thread_started_event_, &finish_event_,
-                              &stack_config_);
-      break;
-  }
+  InvokeSetupFunction(&thread_started_event_, &finish_event_, &stack_config_);
 }
 
 void TargetThread::WaitForThreadStart() {
@@ -195,6 +189,35 @@ void TargetThread::WaitForThreadStart() {
 
 void TargetThread::SignalThreadToFinish() {
   finish_event_.Signal();
+}
+
+// static
+// Disable inlining for this function so that it gets its own stack frame.
+NOINLINE const void* TargetThread::InvokeSetupFunction(
+    WaitableEvent* thread_started_event,
+    WaitableEvent* finish_event,
+    const StackConfiguration* stack_config) {
+  if (stack_config) {
+    switch (stack_config->config) {
+      case StackConfiguration::NORMAL:
+        SignalAndWaitUntilSignaled(thread_started_event, finish_event,
+                                   stack_config);
+        break;
+
+      case StackConfiguration::WITH_ALLOCA:
+        CallWithAlloca(thread_started_event, finish_event, stack_config);
+        break;
+
+      case StackConfiguration::WITH_OTHER_LIBRARY:
+        CallThroughOtherLibrary(thread_started_event, finish_event,
+                                stack_config);
+        break;
+    }
+  }
+
+  // Volatile to prevent a tail call to GetProgramCounter().
+  const void* volatile program_counter = GetProgramCounter();
+  return program_counter;
 }
 
 // static
@@ -711,6 +734,17 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
         << " was not found in stack:\n"
         << FormatSampleForDiagnosticOutput(frames);
 
+    // Check that the stack contains a frame for
+    // TargetThread::InvokeSetupFunction().
+    auto invoker_frame = FindFirstFrameWithinFunction(
+        frames, &TargetThread::InvokeSetupFunction);
+    ASSERT_TRUE(invoker_frame != frames.end())
+        << "Function at "
+        << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
+               &TargetThread::InvokeSetupFunction))
+        << " was not found in stack:\n"
+        << FormatSampleForDiagnosticOutput(frames);
+
     // The stack should look like this, resulting in three frames between
     // SignalAndWaitUntilSignaled and CallThroughOtherLibrary:
     //
@@ -719,7 +753,11 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
     // TargetThread::OtherLibraryCallback
     // InvokeCallbackFunction (in other library)
     // TargetThread::CallThroughOtherLibrary
-    EXPECT_EQ(3, other_library_frame - end_frame)
+    // TargetThread::InvokeSetupFunction
+    EXPECT_EQ(4, invoker_frame - end_frame)
+        << "Stack:\n"
+        << FormatSampleForDiagnosticOutput(frames);
+    EXPECT_EQ(1, invoker_frame - other_library_frame)
         << "Stack:\n"
         << FormatSampleForDiagnosticOutput(frames);
   }
@@ -778,12 +816,23 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Basic) {
 
   // Check that the stack contains a frame for
   // TargetThread::SignalAndWaitUntilSignaled().
-  auto loc = FindFirstFrameWithinFunction(
+  auto end_frame = FindFirstFrameWithinFunction(
       frames, &TargetThread::SignalAndWaitUntilSignaled);
-  ASSERT_TRUE(loc != frames.end())
+  ASSERT_TRUE(end_frame != frames.end())
       << "Function at "
       << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
              &TargetThread::SignalAndWaitUntilSignaled))
+      << " was not found in stack:\n"
+      << FormatSampleForDiagnosticOutput(frames);
+
+  // Check that the stack contains a frame for
+  // TargetThread::InvokeSetupFunction().
+  auto invoker_frame =
+      FindFirstFrameWithinFunction(frames, &TargetThread::InvokeSetupFunction);
+  ASSERT_TRUE(invoker_frame != frames.end())
+      << "Function at "
+      << MaybeFixupFunctionAddressForILT(
+             reinterpret_cast<const void*>(&TargetThread::InvokeSetupFunction))
       << " was not found in stack:\n"
       << FormatSampleForDiagnosticOutput(frames);
 }
@@ -846,8 +895,22 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
       << " was not found in stack:\n"
       << FormatSampleForDiagnosticOutput(frames);
 
+  // Check that the stack contains a frame for
+  // TargetThread::InvokeSetupFunction().
+  auto invoker_frame =
+      FindFirstFrameWithinFunction(frames, &TargetThread::InvokeSetupFunction);
+  ASSERT_TRUE(invoker_frame != frames.end())
+      << "Function at "
+      << MaybeFixupFunctionAddressForILT(
+             reinterpret_cast<const void*>(&TargetThread::InvokeSetupFunction))
+      << " was not found in stack:\n"
+      << FormatSampleForDiagnosticOutput(frames);
+
   // These frames should be adjacent on the stack.
   EXPECT_EQ(1, alloca_frame - end_frame)
+      << "Stack:\n"
+      << FormatSampleForDiagnosticOutput(frames);
+  EXPECT_EQ(1, invoker_frame - alloca_frame)
       << "Stack:\n"
       << FormatSampleForDiagnosticOutput(frames);
 }
@@ -1369,6 +1432,17 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
       << " was not found in stack:\n"
       << FormatSampleForDiagnosticOutput(frames);
 
+  // Check that the stack contains a frame for
+  // TargetThread::InvokeSetupFunction().
+  auto invoker_frame =
+      FindFirstFrameWithinFunction(frames, &TargetThread::InvokeSetupFunction);
+  ASSERT_TRUE(invoker_frame != frames.end())
+      << "Function at "
+      << MaybeFixupFunctionAddressForILT(
+             reinterpret_cast<const void*>(&TargetThread::InvokeSetupFunction))
+      << " was not found in stack:\n"
+      << FormatSampleForDiagnosticOutput(frames);
+
   // The stack should look like this, resulting in three frames between
   // SignalAndWaitUntilSignaled and CallThroughOtherLibrary:
   //
@@ -1377,7 +1451,11 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
   // TargetThread::OtherLibraryCallback
   // InvokeCallbackFunction (in other library)
   // TargetThread::CallThroughOtherLibrary
+  // TargetThread::InvokeSetupFunction
   EXPECT_EQ(3, other_library_frame - end_frame)
+      << "Stack:\n"
+      << FormatSampleForDiagnosticOutput(frames);
+  EXPECT_EQ(1, invoker_frame - other_library_frame)
       << "Stack:\n"
       << FormatSampleForDiagnosticOutput(frames);
 }
