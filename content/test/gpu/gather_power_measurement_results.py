@@ -58,10 +58,11 @@ def GetJsonForBuildSteps(bot, build):
   return GetBuildData('GetBuild', request)
 
 
-def GetLatestBuild(bot):
+def GetLatestGreenBuild(bot):
   request = json.dumps({ 'predicate': { 'builder': { 'project': 'chromium',
                                                      'bucket': 'ci',
-                                                     'builder': bot }},
+                                                     'builder': bot },
+                                        'status': 'SUCCESS' },
                          'fields': 'builds.*.number',
                          'pageSize': 1 })
   builds_json = GetBuildData('SearchBuilds', request)
@@ -247,10 +248,10 @@ def main():
     builds = GetJsonForLatestNBuilds(options.bot, options.build_count)
   else:
     if last_build is None:
-      last_build = GetLatestBuild(options.bot)
+      last_build = GetLatestGreenBuild(options.bot)
     first_build = last_build - options.build_count + 1
     builds = []
-    for build_id in range(last_build, first_build, -1):
+    for build_id in range(last_build, first_build - 1, -1):
       logging.debug('Pull data for build %d' % build_id)
       build_json = GetJsonForBuildSteps(options.bot, build_id)
       build_json['number'] = build_id

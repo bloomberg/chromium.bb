@@ -2341,6 +2341,7 @@ group("test_buildbucket_api_gpu_use_cases") {
     # The test runner and its dependencies.
     "//testing/scripts/test_buildbucket_api_gpu_use_cases.py",
 
+    "//content/test/gpu/gather_power_measurement_results.py",
     "//content/test/gpu/gather_swarming_json_results.py",
   ]
 }
