@@ -73,8 +73,7 @@
 @end
 
 @implementation FakeInfobarContainerCoordinator
-- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
-                      position:(NSInteger)position {
+- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate {
   self.infobarCoordinator = static_cast<InfobarCoordinator*>(infoBarDelegate);
   self.infobarCoordinator.baseViewController = self.baseViewController;
   [self.infobarCoordinator start];

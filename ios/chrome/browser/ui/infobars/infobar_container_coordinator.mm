@@ -155,8 +155,7 @@ const double kBannerPresentationDurationInSeconds = 6.0;
 
 #pragma mark - InfobarConsumer
 
-- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
-                      position:(NSInteger)position {
+- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate {
   DCHECK(IsInfobarUIRebootEnabled());
   InfobarCoordinator* infobarCoordinator =
       static_cast<InfobarCoordinator*>(infoBarDelegate);
