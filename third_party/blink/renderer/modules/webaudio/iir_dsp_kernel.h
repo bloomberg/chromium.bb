@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_IIRDSP_KERNEL_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_IIRDSP_KERNEL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_IIR_DSP_KERNEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_IIR_DSP_KERNEL_H_
 
 #include "third_party/blink/renderer/modules/webaudio/iir_processor.h"
 #include "third_party/blink/renderer/platform/audio/audio_dsp_kernel.h"
@@ -43,4 +43,4 @@ class IIRDSPKernel final : public AudioDSPKernel {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_IIRDSP_KERNEL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_IIR_DSP_KERNEL_H_
