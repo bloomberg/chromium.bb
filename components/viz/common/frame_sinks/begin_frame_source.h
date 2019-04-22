@@ -264,6 +264,11 @@ class VIZ_COMMON_EXPORT DelayBasedBeginFrameSource
   void OnTimerTick() override;
 
  private:
+  // The created BeginFrameArgs' sequence_number is calculated based on what
+  // interval |frame_time| is in. For example, if |last_frame_time_| is 100,
+  // |next_sequence_number_| is 5, |last_timebase_| is 110 and the interval is
+  // 20, then a |frame_time| of 175 would result in the sequence number being 8
+  // (3 intervals since 110).
   BeginFrameArgs CreateBeginFrameArgs(base::TimeTicks frame_time);
   void IssueBeginFrameToObserver(BeginFrameObserver* obs,
                                  const BeginFrameArgs& args);
@@ -272,6 +277,16 @@ class VIZ_COMMON_EXPORT DelayBasedBeginFrameSource
   base::flat_set<BeginFrameObserver*> observers_;
   base::TimeTicks last_timebase_;
   BeginFrameArgs last_begin_frame_args_;
+
+  // Used for determining what the sequence number should be on
+  // CreateBeginFrameArgs.
+  base::TimeTicks next_expected_frame_time_;
+
+  // This is what the sequence number should be for any args created between
+  // |next_expected_frame_time_| to |next_expected_frame_time_| + vsync
+  // interval. Args created outside of this range will have their sequence
+  // number assigned relative to this, based on how many intervals the frame
+  // time is off.
   uint64_t next_sequence_number_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayBasedBeginFrameSource);

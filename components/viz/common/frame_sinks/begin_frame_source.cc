@@ -23,6 +23,11 @@ namespace {
 // often to an observer.
 constexpr double kDoubleTickDivisor = 2.0;
 
+// kErrorMarginIntervalPct used to determine what percentage of the time tick
+// interval should be used as a margin of error when comparing times to
+// deadlines.
+constexpr double kErrorMarginIntervalPct = 0.05;
+
 base::AtomicSequenceNumber g_next_source_id;
 
 // Generates a source_id with upper 32 bits from |restart_id| and lower 32 bits
@@ -244,11 +249,30 @@ void DelayBasedBeginFrameSource::OnUpdateVSyncParameters(
 
 BeginFrameArgs DelayBasedBeginFrameSource::CreateBeginFrameArgs(
     base::TimeTicks frame_time) {
-  uint64_t sequence_number = next_sequence_number_++;
+  base::TimeDelta interval = time_source_->Interval();
+  uint64_t sequence_number = next_sequence_number_;
+
+  base::TimeDelta error_margin = interval * kErrorMarginIntervalPct;
+
+  // We expect |sequence_number| to be the number for the frame at
+  // |expected_frame_time|. We adjust this sequence number according to the
+  // actual frame time in case it is later than expected.
+  if (next_expected_frame_time_ != base::TimeTicks()) {
+    // Add |error_margin| to round |frame_time| up to the next tick if it is
+    // close to the end of an interval. This happens when a timebase is a bit
+    // off because of an imperfect presentation timestamp that may be a bit
+    // later than the beginning of the next interval.
+    int ticks_since_estimated_frame_time =
+        (frame_time + error_margin - next_expected_frame_time_) / interval;
+    sequence_number += std::max(0, ticks_since_estimated_frame_time);
+  }
+
+  next_expected_frame_time_ = time_source_->NextTickTime();
+  next_sequence_number_ = sequence_number + 1;
+
   return BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, source_id(), sequence_number, frame_time,
-      time_source_->NextTickTime(), time_source_->Interval(),
-      BeginFrameArgs::NORMAL);
+      time_source_->NextTickTime(), interval, BeginFrameArgs::NORMAL);
 }
 
 void DelayBasedBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
