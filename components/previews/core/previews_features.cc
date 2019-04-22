@@ -97,7 +97,7 @@ const base::Feature kHTTPSServerPreviewsUsingURLLoader{
 
 // Uses 'Lite Mode' strings instead of 'Data Saver'.
 const base::Feature kDataSaverLiteModeRebranding{
-    "DataSaverLiteModeRebranding", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DataSaverLiteModeRebranding", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, reloading on a preview will cause the session (5 minute) rule
 // to trigger.
