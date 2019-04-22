@@ -392,6 +392,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     void destroy() {
         super.destroy();
         if (mHomeButton != null) mHomeButton.destroy();
+        if (mUrlFocusLayoutAnimator != null && mUrlFocusLayoutAnimator.isRunning()) {
+            mUrlFocusLayoutAnimator.cancel();
+        }
     }
 
     /**

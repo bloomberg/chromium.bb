@@ -39,23 +39,24 @@ public class ImageFetcherFactoryTest {
     public void testGetImageFetcher() {
         assertEquals(ImageFetcherConfig.NETWORK_ONLY,
                 ImageFetcherFactory
-                        .createImageFetcher(ImageFetcherConfig.NETWORK_ONLY, mReferencePool,
-                                mImageFetcherBridge)
+                        .createImageFetcher(ImageFetcherConfig.NETWORK_ONLY, mImageFetcherBridge,
+                                mReferencePool, InMemoryCachedImageFetcher.DEFAULT_CACHE_SIZE)
                         .getConfig());
         assertEquals(ImageFetcherConfig.DISK_CACHE_ONLY,
                 ImageFetcherFactory
-                        .createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY, mReferencePool,
-                                mImageFetcherBridge)
+                        .createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY, mImageFetcherBridge,
+                                mReferencePool, InMemoryCachedImageFetcher.DEFAULT_CACHE_SIZE)
                         .getConfig());
         assertEquals(ImageFetcherConfig.IN_MEMORY_ONLY,
                 ImageFetcherFactory
-                        .createImageFetcher(ImageFetcherConfig.IN_MEMORY_ONLY, mReferencePool,
-                                mImageFetcherBridge)
+                        .createImageFetcher(ImageFetcherConfig.IN_MEMORY_ONLY, mImageFetcherBridge,
+                                mReferencePool, InMemoryCachedImageFetcher.DEFAULT_CACHE_SIZE)
                         .getConfig());
         assertEquals(ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,
                 ImageFetcherFactory
                         .createImageFetcher(ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,
-                                mReferencePool, mImageFetcherBridge)
+                                mImageFetcherBridge, mReferencePool,
+                                InMemoryCachedImageFetcher.DEFAULT_CACHE_SIZE)
                         .getConfig());
     }
 }
