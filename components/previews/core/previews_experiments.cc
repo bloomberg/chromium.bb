@@ -256,11 +256,6 @@ GURL GetOptimizationGuideServiceURL() {
   return GURL(url);
 }
 
-std::string LitePageRedirectPreviewExperiment() {
-  return GetFieldTrialParamValueByFeature(features::kLitePageServerPreviews,
-                                          "lite_page_preview_experiment");
-}
-
 bool IsInLitePageRedirectControl() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kLitePageServerPreviews, "control_group", false);
