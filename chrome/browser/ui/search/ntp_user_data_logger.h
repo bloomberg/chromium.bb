@@ -80,9 +80,6 @@ class NTPUserDataLogger
   // for testing.
   virtual bool DefaultSearchProviderIsGoogle() const;
 
-  // Returns whether a theme is configured. Virtual for testing.
-  virtual bool ThemeIsConfigured() const;
-
   // Returns whether a custom background is configured. Virtual for testing.
   virtual bool CustomBackgroundIsConfigured() const;
 

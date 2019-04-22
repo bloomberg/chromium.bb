@@ -14,8 +14,6 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/search/ntp_user_data_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -487,11 +485,6 @@ bool NTPUserDataLogger::DefaultSearchProviderIsGoogle() const {
   return search::DefaultSearchProviderIsGoogle(profile_);
 }
 
-bool NTPUserDataLogger::ThemeIsConfigured() const {
-  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
-  return !theme_service->GetThemeID().empty();
-}
-
 bool NTPUserDataLogger::CustomBackgroundIsConfigured() const {
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile_);
@@ -543,7 +536,6 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   // since the page load started. That's unlikely enough to not warrant special
   // handling.
   bool is_google = DefaultSearchProviderIsGoogle();
-  bool is_theme_configured = ThemeIsConfigured();
 
   // Split between Web and Local.
   if (ntp_url_.SchemeIsHTTPOrHTTPS()) {
@@ -584,9 +576,6 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
     LogBackgroundCustomizationAvailability(
         BackgroundCustomization::
             BACKGROUND_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER);
-  } else if (is_theme_configured) {
-    LogBackgroundCustomizationAvailability(
-        BackgroundCustomization::BACKGROUND_CUSTOMIZATION_UNAVAILABLE_THEME);
   } else {
     LogBackgroundCustomizationAvailability(
         BackgroundCustomization::BACKGROUND_CUSTOMIZATION_AVAILABLE);
