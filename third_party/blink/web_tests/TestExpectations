@@ -3007,6 +3007,8 @@ crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text/text-encoding/shaping-join-003.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/text-encoding/shaping-tatweel-003.html [ Failure ]
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
 crbug.com/626703 external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/client-navigate.https.html [ Timeout ]
