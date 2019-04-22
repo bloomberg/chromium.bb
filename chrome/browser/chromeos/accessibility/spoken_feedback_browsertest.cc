@@ -367,7 +367,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
   }
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "time *"));
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                 "Battery is*full."));
+                                 "Battery at * percent."));
   EXPECT_EQ("Dialog", speech_monitor_.GetNextUtterance());
   EXPECT_TRUE(
       base::MatchPattern(speech_monitor_.GetNextUtterance(), "*window"));
