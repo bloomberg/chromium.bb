@@ -382,12 +382,14 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6903907808598579934">Įjungti sinchronizavimą</translation>
 <translation id="6914583639806229067">Ieškoti nukopijuoto vaizdo</translation>
 <translation id="6914783257214138813">Jūsų slaptažodžiai bus matomi visiems, kurie gali peržiūrėti eksportuotą failą.</translation>
+<translation id="692898627499215142">Pradinis sinchronizavimo nustatymas nebaigtas. Norint pradėti sinchronizuoti, įgalintas sinchronizavimo perjungimas.</translation>
 <translation id="6944369514868857500">Pasirinkti kitą paskyrą</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
 <translation id="6973630695168034713">Aplankai</translation>
 <translation id="6979158407327259162">„Google“ diskas</translation>
 <translation id="7004499039102548441">Naujausi skirtukai</translation>
 <translation id="7006788746334555276">Turinio nustatymai</translation>
+<translation id="7015203776128479407">Pradinis sinchronizavimo nustatymas nebaigtas. Sinchronizavimas išjungtas.</translation>
 <translation id="7029809446516969842">Slaptažodžiai</translation>
 <translation id="7031882061095297553">Sinchronizavimas su</translation>
 <translation id="7053983685419859001">Blokuoti</translation>
@@ -399,6 +401,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7136892417564438900">Fotoaparatas nepasiekiamas</translation>
 <translation id="7159472599653637159">Užkl. dėl svet. v. mobil.</translation>
 <translation id="7167621057293532233">Duomenų tipai</translation>
+<translation id="7173114856073700355">Atidaryti nustatymus</translation>
 <translation id="7189598951263744875">Bendrinti...</translation>
 <translation id="7192050974311852563">Pradėti registravimą</translation>
 <translation id="7203585745079012652">Sakyti atsakymus</translation>
@@ -475,6 +478,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="850600235656508448">Atidaryti inkognito režimu</translation>
 <translation id="8517375800490286174">Atvirojo šaltinio licencijos</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> skirtukai: <ph name="FIRST_VISIBLE_TAB" />–<ph name="LAST_VISIBLE_TAB" /> iš <ph name="NUMBER_OF_OPEN_TABS" /></translation>
+<translation id="8529767659511976195">Nauja</translation>
 <translation id="8532105204136943229">Gal. pab. metai</translation>
 <translation id="8534481786647257214">„Google+“ įrašas paskelbtas.</translation>
 <translation id="8548878600947630424">Ieškoti puslapyje...</translation>

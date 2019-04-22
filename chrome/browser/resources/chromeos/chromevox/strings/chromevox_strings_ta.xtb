@@ -99,6 +99,7 @@
 <translation id="1616111909442424068">ஒயிட்</translation>
 <translation id="1618597272655350600">தற்போதைய நிலையின் முழு விளக்கத்தை அறிவிக்கிறது</translation>
 <translation id="1627222324347828322">கோஸ்ட் ஓயிட்</translation>
+<translation id="1630688379087270943">சாய்வானவற்றைக் குறி:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{அதிகத்திற்கான குறி}other{# அதிகத்திற்கான குறிகள்}}</translation>
 <translation id="1653266918374749391">முந்தைய, 3 ஆம் படிநிலை தலைப்பு</translation>
 <translation id="1657616855184033958">நிகழ்வு வரிசை வடிப்பான்களைக் காட்டு</translation>
@@ -320,6 +321,7 @@
 <translation id="3286390186030710347">ஸ்லைடர்</translation>
 <translation id="3299925995433437805">அடுத்ததாக பார்வையிட்ட இணைப்பு இல்லை.</translation>
 <translation id="3300348286427369683">உயர் உரை ஆதரவு. இப்போது உரையில் தாவுவதற்கான கட்டளைகள், பிரெய்ல் கர்சர் ரூட்டிங், தேர்ந்தெடுத்தல் மற்றும் பல அம்சங்கள் உட்பட உயர் உரைப் புலங்களை ChromeVox ஆதரிக்கிறது.</translation>
+<translation id="3304756947457041303">உயர் உரை இண்டிகேஷனைத் தனிப்பயனாக்கு</translation>
 <translation id="3307886118343381874">அட்டவணையின்  இறுதிக்குச் செல்</translation>
 <translation id="3311969765485641742">விழிப்பூட்டல்களைப் பார்க்க Alt+Shift+A ஐ அழுத்தவும்</translation>
 <translation id="3312997241656799641">அடுத்ததாக பார்வையிட்ட இணைப்பு</translation>
@@ -406,6 +408,7 @@
 <translation id="3930498801443296724">Pullquote</translation>
 <translation id="3936394396199829062">லாவெண்டர் பிளஷ்</translation>
 <translation id="3941269780691800708">மவுஸை நகர்த்துகையில் கர்சர் காண்பிக்கும் உரையைப் பேசு.</translation>
+<translation id="394953087167197343">எழுத்துப்பிழையைக் குறிக்கும்:</translation>
 <translation id="3962990492275676168">நடப்பு இருப்பிடத்திலிருந்து படிக்கத் தொடங்கு</translation>
 <translation id="3970951409746498040">சாண்டி பிரவுன்</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -452,6 +455,7 @@
 <translation id="42164919740161077">காடெட் புளூ</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{சிறுகோடு}other{# சிறுகோடுகள்}}</translation>
 <translation id="421884353938374759">வண்ணத் தேர்வி</translation>
+<translation id="4221071177874897997">தடிமனானவற்றைக் குறி:</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">லைட் ஸ்லேட் கிரே</translation>
 <translation id="4231102694147661229">‘டெவெலப்பர் விருப்பங்களை’ இயக்கு</translation>
@@ -754,6 +758,7 @@
 <translation id="6348869651006731065">டிம் கிரே</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{பொட்டுக்குறி}other{# பொட்டுக்குறிகள்}}</translation>
 <translation id="6355910664415701303">முந்தைய பட்டியல் உருப்படி இல்லை.</translation>
+<translation id="6360318852623800555">உயர் உரை பண்புக் கூறுகள்</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">முந்தைய தலைப்பு</translation>
 <translation id="6376999910001533545">மரூன்</translation>
@@ -929,6 +934,7 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="762020119231868829">தற்போது இயங்கும் எல்லா ஊடக விட்ஜெட்டுகளையும் இடைநிறுத்தும்</translation>
 <translation id="7625690649919402823">அடுத்த அட்டவணை</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), தரம் <ph name="GRADE" /></translation>
+<translation id="763535765081585392">அடிகோடிட்டவற்றைக் குறி:</translation>
 <translation id="7639968568612851608">அடர்ந்த சாம்பல்</translation>
 <translation id="7641134354185483015">முந்தைய 3 ஆம் படிநிலை தலைப்பு இல்லை.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, உரைப் பெட்டி</translation>
@@ -1164,6 +1170,7 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="8943175951035496220">வலப்புறத்தில் கலம் இல்லை.</translation>
 <translation id="8943282376843390568">சுண்ணாம்பு நிறம்</translation>
 <translation id="8946628535652548639"><ph name="TABLECELLROWINDEX" />வரி.<ph name="TABLECELLCOLUMNINDEX" />நெடு.</translation>
+<translation id="8957142051395645063">அறிவி</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">மற</translation>
 <translation id="900114243503212879">கோப்பு</translation>

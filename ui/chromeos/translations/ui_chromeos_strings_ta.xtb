@@ -285,6 +285,7 @@
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> கோப்பு</translation>
 <translation id="457386861538956877">மேலும்...</translation>
 <translation id="4582497162516204941">Linux (பீட்டா) மூலம் நிறுவு</translation>
+<translation id="4584780943629874245">VM செருகு நிரல் மூலம் பகிர்</translation>
 <translation id="4631887759990505102">கலைஞர்</translation>
 <translation id="4656293982926141856">இந்தக் கணினி</translation>
 <translation id="4669606053856530811">இந்தக் கோப்புகளை '<ph name="SOURCE_NAME" />' இன் உறுப்பினர்களுடன் பகிரவில்லை எனில், அவர்கள் அவற்றுக்கான அணுகலை இழப்பார்கள்.</translation>
@@ -525,6 +526,7 @@
 <translation id="7339898014177206373">புதிய சாளரம்</translation>
 <translation id="7348749398828259943">யுஎஸ் ஒர்க்மேன் இன்டர்நேஷனல் விசைப்பலகை</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> உள்ளடக்கங்களை நகலெடுக்கிறது...</translation>
+<translation id="7379734276381389090"><ph name="NUMBER_OF_ITEMS" /> கோப்புகள் VM செருகு நிரலுடன் பகிரப்பட்டன</translation>
 <translation id="7389722738210761877">தாய் விசைப்பலகை (TIS 820-2531)</translation>
 <translation id="7396038720194014279">இந்தி விசைப்பலகை (ஒலிப்புமுறை)</translation>
 <translation id="7417453074306512035">எத்தியோபிக் விசைப்பலகை</translation>
@@ -587,6 +589,7 @@
 <translation id="7969525169268594403">ஸ்லோவேனியன்</translation>
 <translation id="7982283708762922719">உயரம்</translation>
 <translation id="7987485481246785146">சொரானி குர்டிஷ் அரபிக் விசைப்பலகை</translation>
+<translation id="7990715602172183602">ஒரு கோப்புறை VM செருகு நிரலுடன் பகிரப்பட்டது</translation>
 <translation id="799547531016638432">ஷார்ட்கட்டை அகற்று</translation>
 <translation id="799923393800005025">பார்க்கலாம்</translation>
 <translation id="8008366997883261463">ஜாக் ரஸ்ஸல் டெர்ரியர்</translation>
@@ -627,6 +630,7 @@
 <translation id="8342318071240498787">ஒரே பெயருடைய கோப்பு  அல்லது கோப்பகம் ஏற்கனவே உள்ளன.</translation>
 <translation id="8391950649760071442">ஒலிபெயர்ப்பு (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">பரிமாணங்கள்</translation>
+<translation id="8400874747056634633">VM செருகுநிரல் பகிர்வை நிர்வகி</translation>
 <translation id="8412586565681117057">விரைவு உள்ளீட்டு முறை</translation>
 <translation id="8418113698656761985">ரோமானியன் விசைப்பலகை</translation>
 <translation id="8432745813735585631">யுஎஸ் கோல்மேக் விசைப்பலகை</translation>

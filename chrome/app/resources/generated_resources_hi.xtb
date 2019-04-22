@@ -2582,7 +2582,7 @@
 <translation id="5111646998522066203">गुप्त मोड से बाहर निकलें</translation>
 <translation id="5111692334209731439">&amp;बुकमार्क प्रबंधक</translation>
 <translation id="5112577000029535889">&amp;डेवलपर टूल</translation>
-<translation id="5113739826273394829">अगर आप इस आइकॉन पर क्‍लिक करते हैं, तो आप इस <ph name="DEVICE_TYPE" /> को मैन्‍युअल रूप से लॉक कर लेंगे. अगली बार, अनलॉक करने के लिए आपको अपना पासवर्ड डालना होगा.</translation>
+<translation id="5113739826273394829">अगर आप इस आइकॉन पर क्‍लिक करते हैं तो, आप इस <ph name="DEVICE_TYPE" /> को मैन्‍युअल रूप से लॉक कर लेंगे. अगली बार, अनलॉक करने के लिए आपको अपना पासवर्ड डालना होगा.</translation>
 <translation id="51143538739122961">अपनी सुरक्षा कुंजी लगाएं और उसे छुएं</translation>
 <translation id="5115309401544567011">कृपया अपने <ph name="DEVICE_TYPE" /> को पावर स्रोत में प्लग करें.</translation>
 <translation id="5115338116365931134">एसएसओ (SSO)</translation>
@@ -2603,7 +2603,7 @@
 <translation id="5138227688689900538">कम दिखाएं</translation>
 <translation id="5139955368427980650">&amp;खोलें</translation>
 <translation id="5142961317498132443">पहचान करना</translation>
-<translation id="5143374789336132547">एक्सटेंशन <ph name="EXTENSION_NAME" /> ने यह बदल दिया है कि जब आप होम बटन क्लिक करते हैं तब कौन सा पेज दिखाया जाए.</translation>
+<translation id="5143374789336132547">एक्सटेंशन "<ph name="EXTENSION_NAME" />" ने यह बदल दिया है कि जब आप होम बटन क्लिक करते हैं तब कौनसा पेज दिखाया जाए.</translation>
 <translation id="5143712164865402236">पूर्ण स्क्रीन में प्रवेश करें</translation>
 <translation id="514575469079499857">जगह तय करने के लिए अपने आईपी पते का इस्तेमाल करें (डिफ़ॉल्ट)</translation>
 <translation id="5150254825601720210">Netscape प्रमाणपत्र SSL सर्वर नाम</translation>

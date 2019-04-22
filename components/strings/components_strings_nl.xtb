@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="1001338328714563407">Als beheerder van je apparaat en account kan <ph name="ENROLLMENT_DOMAIN" /> het volgende:</translation>
 <translation id="1008557486741366299">Niet nu</translation>
 <translation id="1010200102790553230">Pagina later laden</translation>
 <translation id="1015730422737071372">Aanvullende gegevens verzenden</translation>
@@ -300,6 +301,7 @@
 <translation id="2586657967955657006">Klembord</translation>
 <translation id="2587730715158995865">Van <ph name="ARTICLE_PUBLISHER" />. Lees dit en <ph name="OTHER_ARTICLE_COUNT" /> andere artikelen.</translation>
 <translation id="2587841377698384444">Directory API-ID:</translation>
+<translation id="2595719060046994702">Dit apparaat en dit account worden niet beheerd door een bedrijf of andere organisatie.</translation>
 <translation id="2597378329261239068">Dit document is beveiligd met een wachtwoord. Geef een wachtwoord op.</translation>
 <translation id="2609632851001447353">Varianten</translation>
 <translation id="2618023639789766142">C10 (envelop)</translation>
@@ -334,6 +336,7 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">De verbinding is opnieuw ingesteld.</translation>
 <translation id="2788784517760473862">Geaccepteerde creditcards</translation>
+<translation id="2792012897584536778">De beheerders van dit apparaat hebben beveiligingscertificaten ingesteld waarmee ze de content kunnen bekijken van websites die je bezoekt.</translation>
 <translation id="2794233252405721443">Site geblokkeerd</translation>
 <translation id="2799020568854403057">De volgende site bevat schadelijke apps</translation>
 <translation id="2799223571221894425">Opnieuw starten</translation>
@@ -350,6 +353,7 @@
 <translation id="2903493209154104877">Adressen</translation>
 <translation id="290376772003165898">Pagina is niet in het <ph name="LANGUAGE" />?</translation>
 <translation id="2909946352844186028">Er is een netwerkwijziging gedetecteerd.</translation>
+<translation id="2910133103376701357">Je apparaat en account worden beheerd door <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2916038427272391327">Andere programma's sluiten</translation>
 <translation id="2922350208395188000">Het servercertificaat kan niet worden gecontroleerd.</translation>
 <translation id="2925673989565098301">Bezorgingsmethode</translation>
@@ -360,6 +364,7 @@
 <translation id="2948083400971632585">Via de instellingenpagina kun je proxyservers uitschakelen die voor een verbinding zijn geconfigureerd.</translation>
 <translation id="2955913368246107853">Zoekbalk sluiten</translation>
 <translation id="2969319727213777354">Als je een beveiligde verbinding tot stand wilt brengen, moet je klok correct zijn ingesteld. Dit moet omdat de certificaten die deze websites gebruiken om zichzelf te identificeren, slechts gedurende bepaalde perioden geldig zijn. Aangezien de klok van je apparaat niet goed is ingesteld, kan Chrome deze certificaten niet verifiëren.</translation>
+<translation id="2970515157925768593">Op afstand je apparaat- en accountinstellingen wijzigen.</translation>
 <translation id="2972581237482394796">&amp;Opnieuw</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, momenteel geselecteerd. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Gegevens wissen</translation>
@@ -371,6 +376,7 @@
 <translation id="3005723025932146533">Opgeslagen kopie weergeven</translation>
 <translation id="3008447029300691911">Geef de CVC-code voor <ph name="CREDIT_CARD" /> op. Zodra je bevestigt, worden je creditcardgegevens gedeeld met deze site.</translation>
 <translation id="3010559122411665027">Lijstitem '<ph name="ENTRY_INDEX" />': <ph name="ERROR" /></translation>
+<translation id="3014389611820813634">Als beheerder van dit apparaat kan <ph name="ENROLLMENT_DOMAIN" /> het volgende:</translation>
 <translation id="301521992641321250">Automatisch geblokkeerd</translation>
 <translation id="3023071826883856138">You4 (envelop)</translation>
 <translation id="3024663005179499861">Onjuist beleidstype</translation>
@@ -413,6 +419,7 @@
 <translation id="3287510313208355388">Downloaden wanneer online</translation>
 <translation id="3293642807462928945">Meer informatie over het beleid <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Geen zoekresultaten gevonden</translation>
+<translation id="3311730110465560799">Op afstand je apparaatinstellingen wijzigen.</translation>
 <translation id="3320021301628644560">Factuuradres toevoegen</translation>
 <translation id="3324983252691184275">Karmozijnrood</translation>
 <translation id="3338095232262050444">Beveiligd</translation>
@@ -505,6 +512,7 @@
 <translation id="3761718714832595332">Status verbergen</translation>
 <translation id="3765032636089507299">De Safe Browsing-pagina is in aanbouw.</translation>
 <translation id="3778403066972421603">Wil je deze pas opslaan in je Google-account en op dit apparaat?</translation>
+<translation id="3779973883630527594">Het bedrijf, de school of de organisatie waardoor dit account wordt beheerd, kan het volgende:</translation>
 <translation id="3781428340399460090">Felroze</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Verloopt: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -545,6 +553,7 @@
 <translation id="4072486802667267160">Er is een fout opgetreden bij het verwerken van je bestelling. Probeer het opnieuw.</translation>
 <translation id="4075732493274867456">De client en server ondersteunen geen algemene SSL-protocolversie of coderingssuite.</translation>
 <translation id="4079302484614802869">Proxyconfiguratie is ingesteld op het gebruik van een pac-script-URL, niet op het gebruik van vaste proxyservers.</translation>
+<translation id="4082393374666368382">Instellingen: beheer</translation>
 <translation id="4092411512356034591">Doorgaan naar <ph name="DOMAIN" />?</translation>
 <translation id="4098354747657067197">Misleidende site gedetecteerd</translation>
 <translation id="4103249731201008433">Serienummer van apparaat is ongeldig</translation>
@@ -677,6 +686,7 @@
 <translation id="4759118997339041434">Automatisch aanvullen voor betalingen uitgeschakeld</translation>
 <translation id="4764776831041365478"><ph name="URL" /> werkt even niet, of de pagina kan verhuisd zijn naar een nieuw webadres.</translation>
 <translation id="4771973620359291008">Er is een onbekende fout opgetreden.</translation>
+<translation id="4780900888022378816">Je apparaat wordt beheerd door <ph name="ENROLLMENT_DOMAIN" /> en je account wordt beheerd door <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Overschakelen naar dit tabblad</translation>
 <translation id="4798078619018708837">Geef de vervaldatum en CVC-code voor <ph name="CREDIT_CARD" /> op om je creditcardgegevens te updaten. Nadat je hebt bevestigd, worden de creditcardgegevens uit je Google-account gedeeld met deze site.</translation>
 <translation id="4800132727771399293">Controleer je vervaldatum en CVC-code en probeer het opnieuw</translation>
@@ -701,6 +711,7 @@
 <translation id="4926159001844873046"><ph name="SITE" /> meldt het volgende</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Geen resultaten</translation>
+<translation id="4945672369594656571">Bepalen hoe je apparaat- en accountgegevens worden verwerkt. Google verwerkt je apparaat- en account gegevens uitsluitend op aanwijzing van je apparaat- en accountbeheerder en alleen voor de doeleinden die zijn opgegeven door je apparaat- en accountbeheerder.</translation>
 <translation id="4950898438188848926">Schakelknop voor tabbladen, druk op Enter om naar het geopende tabblad, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" />, te schakelen</translation>
 <translation id="495170559598752135">Acties</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -714,6 +725,7 @@
 <translation id="5017554619425969104">Tekst die je hebt gekopieerd</translation>
 <translation id="5018422839182700155">Kan deze pagina niet openen</translation>
 <translation id="5019198164206649151">Backend-opslag in slechte staat</translation>
+<translation id="5020154601324912079">Bepalen hoe je apparaatgegevens worden verwerkt. Google verwerkt je apparaatgegevens uitsluitend op aanwijzing van je apparaatbeheerder en alleen voor de doeleinden die zijn opgegeven door je apparaatbeheerder.</translation>
 <translation id="5023310440958281426">Neem het beleid van je beheerder door</translation>
 <translation id="5029568752722684782">Kopie wissen</translation>
 <translation id="503069730517007720">Er is een rootcertificaat voor '<ph name="SOFTWARE_NAME" />' vereist, maar niet geïnstalleerd. Je IT-beheerder moet de configuratie-instructies voor '<ph name="SOFTWARE_NAME" />' raadplegen om dit probleem op te lossen. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -871,6 +883,7 @@
 <translation id="5838278095973806738">Geef geen gevoelige gegevens op op deze site (zoals wachtwoorden of creditcards), want deze kunnen worden gestolen door cybercriminelen.</translation>
 <translation id="5860033963881614850">Uit</translation>
 <translation id="5863847714970149516">De komende pagina probeert misschien kosten in rekening te brengen</translation>
+<translation id="5865951947699094510">Op afstand je accountinstellingen wijzigen.</translation>
 <translation id="5866257070973731571">Telefoonnummer toevoegen</translation>
 <translation id="5869405914158311789">Deze site is niet bereikbaar</translation>
 <translation id="5869522115854928033">Opgeslagen wachtwoorden</translation>
@@ -891,6 +904,7 @@
 <translation id="5977976211062815271">Op dit apparaat</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Kan betaal-app niet openen</translation>
+<translation id="5988826871883769516">Je apparaat wordt beheerd door <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="5989320800837274978">Er worden geen vaste proxyservers en geen pac-script-URL gespecificeerd.</translation>
 <translation id="5990559369517809815">Verzoeken aan de server zijn door een extensie geblokkeerd.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -908,6 +922,7 @@
 <translation id="6047233362582046994">Als je de beveiligingsrisico's begrijpt, kun je <ph name="BEGIN_LINK" />deze site bezoeken<ph name="END_LINK" /> voordat de schadelijke apps zijn verwijderd.</translation>
 <translation id="6047927260846328439">Deze content probeert je mogelijk te misleiden om software te installeren of persoonsgegevens openbaar te maken. <ph name="BEGIN_LINK" />Toch weergeven<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Je kunt <ph name="SITE" /> momenteel niet bezoeken, omdat de website gebruikmaakt van certificaatpinning. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
+<translation id="6052284303005792909">•</translation>
 <translation id="6058977677006700226">Je passen gebruiken op al je apparaten?</translation>
 <translation id="6059925163896151826">USB-apparaten</translation>
 <translation id="6080696365213338172">Je hebt toegang tot content gekregen met behulp van een certificaat van je beheerder. Gegevens die je verstrekt aan <ph name="DOMAIN" />, kunnen door je beheerder worden onderschept.</translation>
@@ -976,6 +991,7 @@
 <translation id="6508722015517270189">Chrome opnieuw starten</translation>
 <translation id="6529602333819889595">&amp;Opnieuw verwijderen</translation>
 <translation id="6534179046333460208">Fysieke web-suggesties</translation>
+<translation id="6554795675067793129">Je account wordt beheerd door <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Opnieuw</translation>
 <translation id="6563469144985748109">Je beheerder heeft dit nog niet goedgekeurd</translation>
 <translation id="6569060085658103619">Je bekijkt een extensiepagina</translation>
@@ -1060,6 +1076,7 @@
 <translation id="7062635574500127092">Blauwgroen</translation>
 <translation id="7064851114919012435">Contactgegevens</translation>
 <translation id="7079718277001814089">Deze site bevat malware</translation>
+<translation id="7081564429925484109">Waarschuwing: Dit beleid is niet samengevoegd zoals is gespecificeerd in het beleid PolicyListMultipleSourceMergeList, omdat het geen lijst is.</translation>
 <translation id="7087282848513945231">County</translation>
 <translation id="7090678807593890770">Zoek op Google naar <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Verbergen</translation>
@@ -1133,6 +1150,7 @@ Aanvullende informatie:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Wachtwoorden beheren…</translation>
 <translation id="7419106976560586862">Profielpad</translation>
+<translation id="7424427397225027541">Bepalen hoe je accountgegevens worden verwerkt. Google verwerkt je accountgegevens uitsluitend op aanwijzing van je accountbeheerder en alleen voor de doeleinden die zijn opgegeven door je accountbeheerder.</translation>
 <translation id="7437289804838430631">Contactgegevens toevoegen</translation>
 <translation id="7440140511386898319">Content bekijken wanneer je offline bent</translation>
 <translation id="7441627299479586546">Onjuist beleidsonderwerp</translation>
@@ -1218,6 +1236,7 @@ Aanvullende informatie:
 <translation id="780301667611848630">Nee, bedankt</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7806344367022510803">De zoekmachine-instellingen wijzigen in Chrome</translation>
+<translation id="7810209002420871817">Als beheerder van je account kan <ph name="ACCOUNT_DOMAIN" /> het volgende:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Formuliersuggestie verwijderen uit Chrome?</translation>
 <translation id="7815407501681723534"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> gevonden voor '<ph name="SEARCH_STRING" />'</translation>

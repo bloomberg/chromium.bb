@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
 <translation id="1291207594882862231">Очистити історію, файли cookie, дані сайтів, кеш…</translation>
 <translation id="129553762522093515">Нещодавно закриті</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> – Надіслано з пристрою "<ph name="DEVICE_NAME" />"</translation>
 <translation id="1326317727527857210">Щоб мати доступ до вкладок з інших пристроїв, увійдіть в обліковий запис Chrome.</translation>
 <translation id="1331212799747679585">Неможливо оновити Chrome. Більше опцій</translation>
 <translation id="1332501820983677155">Комбінації клавіш для функцій Google Chrome</translation>
@@ -171,6 +172,7 @@
 <translation id="2154484045852737596">Редагувати картку</translation>
 <translation id="2154710561487035718">Копіювати URL-адресу</translation>
 <translation id="2156074688469523661">Інші сайти (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">Спільний доступ</translation>
 <translation id="2206488550163399966">Веб-додаток <ph name="APP_NAME" />: <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Продовжити як <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Надсилати в Google деяку інформацію про систему та вміст сторінок</translation>
@@ -650,6 +652,7 @@
 <translation id="5797070761912323120">Google може використовувати вашу історію, щоб персоналізувати Пошук, оголошення й інші сервіси Google</translation>
 <translation id="5804241973901381774">Дозволи</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# годину тому}one{# годину тому}few{# години тому}many{# годин тому}other{# години тому}}</translation>
+<translation id="5810288467834065221">Авторське право <ph name="YEAR" /> Google LLC. Усі права захищено.</translation>
 <translation id="5817918615728894473">Підключити</translation>
 <translation id="583281660410589416">Невідомий</translation>
 <translation id="5833984609253377421">Поділитися посиланням</translation>
@@ -901,6 +904,7 @@
 <translation id="756809126120519699">Дані Chrome видалено</translation>
 <translation id="757524316907819857">Заборонити сайтам відтворювати захищений вміст</translation>
 <translation id="757855969265046257">{FILES,plural, =1{Завантажено <ph name="FILES_DOWNLOADED_ONE" /> файл}one{Завантажено <ph name="FILES_DOWNLOADED_MANY" /> файл}few{Завантажено <ph name="FILES_DOWNLOADED_MANY" /> файли}many{Завантажено <ph name="FILES_DOWNLOADED_MANY" /> файлів}other{Завантажено <ph name="FILES_DOWNLOADED_MANY" /> файлу}}</translation>
+<translation id="7588219262685291874">Показувати темну тему, коли на пристрої ввімкнено режим енергозбереження</translation>
 <translation id="7589445247086920869">Заблокувати для поточної пошукової системи</translation>
 <translation id="7593557518625677601">Щоб почати синхронізацію Chrome, відкрийте параметри Android і знову ввімкніть синхронізацію системи</translation>
 <translation id="7596558890252710462">Операційна система</translation>
@@ -1000,6 +1004,7 @@
 <translation id="8266862848225348053">Папка для завантажень</translation>
 <translation id="8274165955039650276">Переглянути завантаження</translation>
 <translation id="8283853025636624853">Синхронізація з обліковим записом <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
+<translation id="8300705686683892304">Керуються додатком</translation>
 <translation id="8310344678080805313">Стандартні вкладки</translation>
 <translation id="8313455859591948645">Редагувати стартову сторінку</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> та інші сайти</translation>

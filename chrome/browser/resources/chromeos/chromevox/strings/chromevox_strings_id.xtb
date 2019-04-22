@@ -214,6 +214,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="2626530649491650971">dapat diklik</translation>
 <translation id="2628764385451019380">Tidak ada kotak kombo sebelumnya.</translation>
 <translation id="2637227747952042642">Matematika</translation>
+<translation id="2638785836053527382">Download <ph name="FILE_NAME" /> dilanjutkan</translation>
 <translation id="2639750663247012216">Pengubah ChromeVox</translation>
 <translation id="2644542693584024604">salah eja</translation>
 <translation id="2661530546602071611">Pemberitahuan</translation>
@@ -622,7 +623,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="5349770431644471053">Back link</translation>
 <translation id="536031132345979795">Lompat ke belakang selama proses membaca berlangsung</translation>
 <translation id="5368000168321181111">Earcons tidak aktif</translation>
-<translation id="5368505757342402527">Download <ph name="PROGRESS" />% complete <ph name="FILE_NAME" />. About <ph name="TIME" /> <ph name="UNITS" /> remaining.</translation>
+<translation id="5368505757342402527">Download <ph name="FILE_NAME" /> <ph name="PROGRESS" />% selesai. Sekitar <ph name="TIME" /> <ph name="UNITS" /> lagi.</translation>
 <translation id="5374320867641260420">Tidak ada tombol berikutnya.</translation>
 <translation id="5376407118396657359">Tekan Search+Ctrl+Alt dengan tanda panah untuk memilih sel.</translation>
 <translation id="5382299583965267720">Tidak ada judul tingkat 1 berikutnya.</translation>
@@ -1002,7 +1003,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="8096975275316362544">Mint Cream</translation>
 <translation id="8098587210054821856">Slate Grey</translation>
 <translation id="8110647606445335195">Tidak ada bangunan terkenal ARIA.</translation>
-<translation id="812886159861361726">Download stopped <ph name="FILE_NAME" /></translation>
+<translation id="812886159861361726">Download <ph name="FILE_NAME" /> dihentikan</translation>
 <translation id="8138880386467279117">Sentuh</translation>
 <translation id="8153880621934657047">Tidak ada di dalam tabel.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{garis bawah}other{# garis bawah}}</translation>
