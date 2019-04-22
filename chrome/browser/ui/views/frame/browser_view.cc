@@ -1532,8 +1532,9 @@ void BrowserView::ShowAppMenu() {
       immersive_mode_controller_->GetRevealedLock(
           ImmersiveModeController::ANIMATE_REVEAL_NO));
 
-  toolbar_button_provider_->GetAppMenuButton()->button_controller()->Activate(
-      nullptr);
+  toolbar_button_provider_->GetAppMenuButton()
+      ->menu_button_controller()
+      ->Activate(nullptr);
 }
 
 content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
