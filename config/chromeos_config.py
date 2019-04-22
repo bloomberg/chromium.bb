@@ -655,7 +655,7 @@ def GeneralTemplates(site_config):
   )
 
   site_config.AddTemplate(
-      'release',
+      'release_common',
       site_config.templates.full,
       site_config.templates.official,
       site_config.templates.internal,
@@ -705,13 +705,18 @@ def GeneralTemplates(site_config):
   )
 
   site_config.AddTemplate(
+      'release',
+      site_config.templates.release_common,
+      luci_builder=config_lib.LUCI_BUILDER_RELEASE,
+  )
+
+  site_config.AddTemplate(
       'factory_firmware',
-      site_config.templates.release,
+      site_config.templates.release_common,
       luci_builder=config_lib.LUCI_BUILDER_FACTORY,
   )
 
   ### Release AFDO configs.
-
   site_config.AddTemplate(
       'release_afdo',
       site_config.templates.release,
