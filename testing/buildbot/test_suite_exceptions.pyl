@@ -87,6 +87,11 @@
           'shards': 21,
         },
       },
+      'linux-chromeos-oobe-code-coverage': {
+        'swarming': {
+          'shards': 21,
+        },
+      },
       # chromium.chromiumos
       'linux-chromeos-dbg': {
         'swarming': {
@@ -1013,6 +1018,11 @@
           'shards': 20,
         },
       },
+      'linux-chromeos-oobe-code-coverage': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
       # chromium.chromiumos
       'linux-chromeos-dbg': {
         'swarming': {
@@ -1415,6 +1425,11 @@
     'modifications': {
       # chromium.fyi
       'linux-chromeos-code-coverage': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'linux-chromeos-oobe-code-coverage': {
         'swarming': {
           'shards': 20,
         },
