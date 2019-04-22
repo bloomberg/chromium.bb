@@ -193,14 +193,12 @@ class CastActivityRecord {
   // closed).
   void HandleLeaveSession(const std::string& client_id);
 
-  // Adds a new client |client_id| to this session and returns the handles of
-  // the two pipes to be held by Blink It is invalid to call this method if the
-  // client already exists.
-  mojom::RoutePresentationConnectionPtr AddClient(
-      const std::string& client_id,
-      const url::Origin& origin,
-      int tab_id,
-      AutoJoinPolicy auto_join_policy);
+  // Adds a new client specified by |source| to this session and returns the
+  // handles of the two pipes to be held by Blink.  It is invalid to call this
+  // method if the client already exists.
+  mojom::RoutePresentationConnectionPtr AddClient(const CastMediaSource& source,
+                                                  const url::Origin& origin,
+                                                  int tab_id);
   void RemoveClient(const std::string& client_id);
 
   // On the first call, saves the ID of |session|.  On subsequent calls,
@@ -299,6 +297,13 @@ class CastActivityManager : public cast_channel::CastMessageHandler::Observer,
                      bool incognito,
                      mojom::MediaRouteProvider::CreateRouteCallback callback);
 
+  void JoinSession(const CastMediaSource& cast_source,
+                   const std::string& presentation_id,
+                   const url::Origin& origin,
+                   int tab_id,
+                   bool incognito,
+                   mojom::MediaRouteProvider::JoinRouteCallback callback);
+
   // Terminates a Cast session represented by |route_id|.
   void TerminateSession(
       const MediaRoute::Id& route_id,
@@ -396,6 +401,17 @@ class CastActivityManager : public cast_channel::CastMessageHandler::Observer,
       const MediaRoute::Id& route_id,
       mojom::MediaRouteProvider::TerminateRouteCallback callback,
       cast_channel::Result result);
+
+  CastActivityRecord* FindActivityForAutoJoin(
+      const CastMediaSource& cast_source,
+      const url::Origin& origin,
+      int tab_id);
+  CastActivityRecord* FindActivityForSessionJoin(
+      const CastMediaSource& cast_source,
+      const std::string& presentation_id);
+  bool CanJoinSession(const CastActivityRecord& activity,
+                      const CastMediaSource& cast_source,
+                      bool incognito) const;
 
   // Creates and stores a CastActivityRecord representing a non-local activity.
   void AddNonLocalActivityRecord(const MediaSinkInternal& sink,

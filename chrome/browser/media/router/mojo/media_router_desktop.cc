@@ -80,7 +80,8 @@ MediaRouterDesktop::GetProviderIdForPresentation(
   if (presentation_id == kAutoJoinPresentationId ||
       base::StartsWith(presentation_id, kCastPresentationIdPrefix,
                        base::CompareCase::SENSITIVE)) {
-    return MediaRouteProviderId::EXTENSION;
+    return CastMediaRouteProviderEnabled() ? MediaRouteProviderId::CAST
+                                           : MediaRouteProviderId::EXTENSION;
   }
   return MediaRouterMojoImpl::GetProviderIdForPresentation(presentation_id);
 }

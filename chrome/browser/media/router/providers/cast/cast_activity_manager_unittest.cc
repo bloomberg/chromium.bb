@@ -697,6 +697,24 @@ TEST_F(CastActivityManagerTest, SendMediaRequestToReceiver) {
       })"));
 }
 
+TEST_F(CastActivityManagerTest, CanJoinSession) {
+  // TODO(crbug/943291): Write test for CastActivityManager::CanJoinSession.
+}
+
+TEST_F(CastActivityManagerTest, FindActivityForSessionJoin) {
+  // TODO(crbug/943291): Write test for
+  // CastActivityManager::FindActivityForSessionJoin.
+}
+
+TEST_F(CastActivityManagerTest, FindActivityForAutoJoin) {
+  // TODO(crbug/943291): Write test for
+  // CastActivityManager::FindActivityForAutoJoin.
+}
+
+TEST_F(CastActivityManagerTest, JoinSession) {
+  // TODO(crbug/943291): Write test for CastActivityManager::JoinSession.
+}
+
 TEST_P(CastActivityManagerTest, HandleLeaveSession) {
   bool should_close;
   const char* url;

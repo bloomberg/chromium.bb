@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/common/media_router/discovery/media_sink_service_base.h"
+#include "chrome/common/media_router/media_source_helper.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 
 using blink::mojom::PresentationConnectionCloseReason;
@@ -98,17 +99,14 @@ void CastSessionClient::DidClose(PresentationConnectionCloseReason reason) {
   // TODO(https://crbug.com/809249): Implement close connection with this
   // method once we make sure Blink calls this on navigation and on
   // PresentationConnection::close().
+  DVLOG(2)
+      << "CastSessionClient::DidClose not implemented; called with reason = "
+      << reason;
 }
+
 bool CastSessionClient::MatchesAutoJoinPolicy(url::Origin origin,
                                               int tab_id) const {
-  switch (auto_join_policy_) {
-    case AutoJoinPolicy::kTabAndOriginScoped:
-      return origin == origin_ && tab_id == tab_id_;
-    case AutoJoinPolicy::kOriginScoped:
-      return origin == origin_;
-    default:
-      return false;
-  }
+  return IsAutoJoinAllowed(auto_join_policy_, origin, tab_id, origin_, tab_id_);
 }
 
 void CastSessionClient::HandleParsedClientMessage(
@@ -235,13 +233,14 @@ void CastSessionClient::TearDownPresentationConnection() {
 CastActivityRecord::~CastActivityRecord() {}
 
 mojom::RoutePresentationConnectionPtr CastActivityRecord::AddClient(
-    const std::string& client_id,
+    const CastMediaSource& source,
     const url::Origin& origin,
-    int tab_id,
-    AutoJoinPolicy auto_join_policy) {
+    int tab_id) {
+  const std::string& client_id = source.client_id();
   DCHECK(!base::ContainsKey(connected_clients_, client_id));
-  auto client = std::make_unique<CastSessionClient>(
-      client_id, origin, tab_id, auto_join_policy, data_decoder_, this);
+  auto client = std::make_unique<CastSessionClient>(client_id, origin, tab_id,
+                                                    source.auto_join_policy(),
+                                                    data_decoder_, this);
   auto presentation_connection = client->Init();
   connected_clients_.emplace(client_id, std::move(client));
 
@@ -525,8 +524,7 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
   const std::string& client_id = cast_source.client_id();
   if (!client_id.empty()) {
     presentation_connection =
-        activity_ptr->AddClient(client_id, params.origin, params.tab_id,
-                                cast_source.auto_join_policy());
+        activity_ptr->AddClient(cast_source, params.origin, params.tab_id);
     activity_ptr->SendMessageToClient(
         client_id,
         CreateReceiverActionCastMessage(client_id, sink, hash_token_));
@@ -553,6 +551,143 @@ void CastActivityManager::LaunchSessionAfterTerminatingExisting(
       << *error_string;
   activities_.erase(existing_route_id);
   DoLaunchSession(std::move(params));
+}
+
+bool CastActivityManager::CanJoinSession(const CastActivityRecord& activity,
+                                         const CastMediaSource& cast_source,
+                                         bool incognito) const {
+  if (!cast_source.ContainsApp(activity.app_id()))
+    return false;
+
+  if (base::ContainsKey(activity.connected_clients(), cast_source.client_id()))
+    return false;
+
+  if (activity.route().is_incognito() != incognito)
+    return false;
+
+  return true;
+}
+
+CastActivityRecord* CastActivityManager::FindActivityForSessionJoin(
+    const CastMediaSource& cast_source,
+    const std::string& presentation_id) {
+  // We only allow joining by session ID. The Cast SDK uses
+  // "cast-session_<Session ID>" as the presentation ID in the reconnect
+  // request.
+  if (!base::StartsWith(presentation_id, kCastPresentationIdPrefix,
+                        base::CompareCase::SENSITIVE)) {
+    // TODO(jrw): Find session by presentation_id.
+    return nullptr;
+  }
+
+  // Find the session ID.
+  std::string session_id{
+      presentation_id.substr(strlen(kCastPresentationIdPrefix))};
+
+  // Find activity by session ID.  Search should fail if the session ID is not
+  // valid.
+  auto it = std::find_if(activities_.begin(), activities_.end(),
+                         [&session_id](const auto& entry) {
+                           return entry.second->session_id() == session_id;
+                         });
+  return it == activities_.end() ? nullptr : it->second.get();
+}
+
+CastActivityRecord* CastActivityManager::FindActivityForAutoJoin(
+    const CastMediaSource& cast_source,
+    const url::Origin& origin,
+    int tab_id) {
+  switch (cast_source.auto_join_policy()) {
+    case AutoJoinPolicy::kTabAndOriginScoped:
+    case AutoJoinPolicy::kOriginScoped:
+      break;
+    case AutoJoinPolicy::kPageScoped:
+      return nullptr;
+  }
+
+  auto it = std::find_if(
+      activities_.begin(), activities_.end(),
+      [&cast_source, &origin, tab_id](const auto& activity) {
+        AutoJoinPolicy policy = cast_source.auto_join_policy();
+        const CastActivityRecord* record = activity.second.get();
+        if (!record->route().is_local())
+          return false;
+        if (!cast_source.ContainsApp(record->app_id()))
+          return false;
+        const auto& clients = record->connected_clients();
+        return std::any_of(clients.begin(), clients.end(),
+                           [policy, &origin, tab_id](const auto& client) {
+                             return IsAutoJoinAllowed(policy, origin, tab_id,
+                                                      client.second->origin(),
+                                                      client.second->tab_id());
+                           });
+      });
+  return it == activities_.end() ? nullptr : it->second.get();
+}
+
+void CastActivityManager::JoinSession(
+    const CastMediaSource& cast_source,
+    const std::string& presentation_id,
+    const url::Origin& origin,
+    int tab_id,
+    bool incognito,
+    mojom::MediaRouteProvider::JoinRouteCallback callback) {
+  DVLOG(2) << "JoinSession: source / presentation ID: "
+           << cast_source.source_id() << ", " << presentation_id;
+  CastActivityRecord* activity = nullptr;
+  if (presentation_id == kAutoJoinPresentationId) {
+    activity = FindActivityForAutoJoin(cast_source, origin, tab_id);
+    if (!activity && cast_source.default_action_policy() !=
+                         DefaultActionPolicy::kCastThisTab) {
+      // TODO(crbug.com/951057): Try to convert a mirroring route matching the
+      // tab to a Cast route.
+      DLOG(ERROR) << "Conversion to a Cast route is not implemented.";
+    }
+  } else {
+    activity = FindActivityForSessionJoin(cast_source, presentation_id);
+  }
+
+  if (!activity || !CanJoinSession(*activity, cast_source, incognito)) {
+    DVLOG(2) << "No joinable activity";
+    std::move(callback).Run(base::nullopt, nullptr,
+                            std::string("No matching route"),
+                            RouteRequestResult::ResultCode::ROUTE_NOT_FOUND);
+    return;
+  }
+  DVLOG(2) << "Found activity to join: " << activity->route().media_route_id();
+
+  // TODO(jrw): Check whether |activity| is from an incognito route, maybe
+  // report INCOGNITO_MISMATCH, or remove INCOGNITO_MISMATCH from
+  // RouteRequestResult::ResultCode.  The check is currently performed inside
+  // CanJoinSession(), and the behavior is consistent with the old
+  // implementation, which never reports an INCOGNITO_MISMATCH error.
+
+  const MediaSinkInternal* sink =
+      media_sink_service_->GetSinkById(activity->route().media_sink_id());
+  if (!sink) {
+    std::move(callback).Run(base::nullopt, nullptr,
+                            std::string("Sink not found"),
+                            RouteRequestResult::ResultCode::SINK_NOT_FOUND);
+    return;
+  }
+
+  mojom::RoutePresentationConnectionPtr presentation_connection =
+      activity->AddClient(cast_source, origin, tab_id);
+
+  DCHECK(activity->session_id());
+  const CastSession* session =
+      session_tracker_->GetSessionById(*activity->session_id());
+  const std::string& client_id = cast_source.client_id();
+  activity->SendMessageToClient(
+      client_id,
+      CreateNewSessionMessage(*session, client_id, *sink, hash_token_));
+  message_handler_->EnsureConnection(sink->cast_data().cast_channel_id,
+                                     client_id, session->transport_id());
+
+  // Route is now local; update route queries.
+  NotifyAllOnRoutesUpdated();
+  std::move(callback).Run(activity->route(), std::move(presentation_connection),
+                          base::nullopt, RouteRequestResult::ResultCode::OK);
 }
 
 void CastActivityManager::RemoveActivity(

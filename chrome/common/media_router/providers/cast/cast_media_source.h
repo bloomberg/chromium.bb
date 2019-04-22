@@ -73,7 +73,7 @@ struct CastAppInfo {
 // Auto-join policy determines when the SDK will automatically connect a sender
 // application to an existing session after API initialization.
 enum class AutoJoinPolicy {
-  // No automatic connection.
+  // No automatic connection.  This is the default when no policy is specified.
   kPageScoped,
   // Automatically connects when the session was started with the same app ID,
   // in the same tab and page origin.
@@ -97,6 +97,14 @@ enum class DefaultActionPolicy {
   // not cast, despite the name).
   kCastThisTab,
 };
+
+// Tests whether a sender specified by (origin1, tab_id1) is allowed by |policy|
+// to join (origin2, tab_id2).
+bool IsAutoJoinAllowed(AutoJoinPolicy policy,
+                       const url::Origin& origin1,
+                       int tab_id1,
+                       const url::Origin& origin2,
+                       int tab_id2);
 
 // Represents a MediaSource parsed into structured, Cast specific data. The
 // following MediaSources can be parsed into CastMediaSource:
@@ -142,7 +150,9 @@ class CastMediaSource {
     broadcast_request_ = request;
   }
   AutoJoinPolicy auto_join_policy() const { return auto_join_policy_; }
-  DefaultActionPolicy default_action_policy() { return default_action_policy_; }
+  DefaultActionPolicy default_action_policy() const {
+    return default_action_policy_;
+  }
 
  private:
   MediaSource::Id source_id_;

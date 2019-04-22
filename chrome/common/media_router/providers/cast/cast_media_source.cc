@@ -274,6 +274,21 @@ std::unique_ptr<CastMediaSource> ParseLegacyCastUrl(
 
 }  // namespace
 
+bool IsAutoJoinAllowed(AutoJoinPolicy policy,
+                       const url::Origin& origin1,
+                       int tab_id1,
+                       const url::Origin& origin2,
+                       int tab_id2) {
+  switch (policy) {
+    case AutoJoinPolicy::kPageScoped:
+      return false;
+    case AutoJoinPolicy::kTabAndOriginScoped:
+      return origin1 == origin2 && tab_id1 == tab_id2;
+    case AutoJoinPolicy::kOriginScoped:
+      return origin1 == origin2;
+  }
+}
+
 CastAppInfo::CastAppInfo(
     const std::string& app_id,
     BitwiseOr<cast_channel::CastDeviceCapability> required_capabilities)
