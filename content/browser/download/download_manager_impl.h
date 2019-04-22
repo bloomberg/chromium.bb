@@ -197,6 +197,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       uint32_t id);
 
   // InProgressDownloadManager::Delegate implementations.
+  void OnDownloadsInitialized() override;
   bool InterceptDownload(const download::DownloadCreateInfo& info) override;
   base::FilePath GetDefaultDownloadDirectory() override;
   void StartDownloadItem(
@@ -206,9 +207,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       override;
   net::URLRequestContextGetter* GetURLRequestContextGetter(
       const download::DownloadCreateInfo& info) override;
-
-  // Called when InProgressDownloadManager is initialzed.
-  void OnInProgressDownloadManagerInitialized();
 
   // Creates a new download item and call |callback|.
   void CreateNewDownloadItemToStart(

@@ -54,13 +54,16 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Class to be notified when download starts/stops.
   class COMPONENTS_DOWNLOAD_EXPORT Delegate {
    public:
+    // Called when in-progress downloads are initialized.
+    virtual void OnDownloadsInitialized() = 0;
+
     // Intercepts the download to another system if applicable. Returns true if
     // the download was intercepted.
     virtual bool InterceptDownload(
-        const DownloadCreateInfo& download_create_info) = 0;
+        const DownloadCreateInfo& download_create_info);
 
     // Gets the default download directory.
-    virtual base::FilePath GetDefaultDownloadDirectory() = 0;
+    virtual base::FilePath GetDefaultDownloadDirectory();
 
     // Gets the download item for the given |download_create_info|.
     // TODO(qinmin): remove this method and let InProgressDownloadManager
@@ -68,12 +71,12 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     virtual void StartDownloadItem(
         std::unique_ptr<DownloadCreateInfo> info,
         const DownloadUrlParameters::OnStartedCallback& on_started,
-        StartDownloadItemCallback callback) = 0;
+        StartDownloadItemCallback callback) {}
 
     // Gets the URLRequestContextGetter for sending requests.
     // TODO(qinmin): remove this once network service is fully enabled.
     virtual net::URLRequestContextGetter* GetURLRequestContextGetter(
-        const DownloadCreateInfo& download_create_info) = 0;
+        const DownloadCreateInfo& download_create_info);
   };
 
   using IsOriginSecureCallback = base::RepeatingCallback<bool(const GURL&)>;
@@ -164,7 +167,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     url_loader_factory_getter_ = std::move(url_loader_factory_getter);
   }
 
-  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+  void SetDelegate(Delegate* delegate);
 
   void set_is_origin_secure_cb(
       const IsOriginSecureCallback& is_origin_secure_cb) {
@@ -204,6 +207,12 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       std::unique_ptr<DownloadCreateInfo> info,
       DownloadItemImpl* download,
       bool should_persist_new_download);
+
+  // Called when downloads are initialized.
+  void OnDownloadsInitialized();
+
+  // Called to notify |delegate| that downloads are initialized.
+  void NotifyDownloadsInitialized(Delegate* delegate);
 
   // Active download handlers.
   std::vector<UrlDownloadHandler::UniqueUrlDownloadHandlerPtr>

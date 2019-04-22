@@ -134,6 +134,8 @@ source_set("test_support") {
     "mock_download_item_impl.h",
     "mock_input_stream.cc",
     "mock_input_stream.h",
+    "mock_simple_download_manager.cc",
+    "mock_simple_download_manager.h",
   ]
 
   public_deps = [

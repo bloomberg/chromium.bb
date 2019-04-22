@@ -73,11 +73,9 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
 
  private:
   // SimpleDownloadManager::Observer implementation.
+  void OnDownloadsInitialized() override;
   void OnManagerGoingDown() override;
   void OnDownloadCreated(DownloadItem* item) override;
-
-  // Called when |simple_download_manager_| is initialized.
-  void OnManagerInitialized(bool has_all_history_downloads);
 
   SimpleDownloadManager* simple_download_manager_;
 
@@ -86,6 +84,9 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
 
   // Whether all the history downloads are ready.
   bool has_all_history_downloads_;
+
+  // Whether current SimpleDownloadManager has all history downloads.
+  bool current_manager_has_all_history_downloads_;
 
   // Whether this object is initialized and active downloads are ready to be
   // retrieved.

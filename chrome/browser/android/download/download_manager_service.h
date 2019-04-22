@@ -33,6 +33,7 @@ class DownloadItem;
 // Java object.
 class DownloadManagerService
     : public download::AllDownloadItemNotifier::Observer,
+      public download::InProgressDownloadManager::Delegate,
       public content::DownloadManager::Observer,
       public content::NotificationObserver,
       public service_manager::Service {
@@ -229,6 +230,9 @@ class DownloadManagerService
 
   // Called when all pending downloads are loaded.
   void OnPendingDownloadsLoaded();
+
+  // download::InProgressDownloadManager::Delegate implementations.
+  void OnDownloadsInitialized() override;
 
   typedef base::Callback<void(bool)> ResumeCallback;
   void set_resume_callback_for_testing(const ResumeCallback& resume_cb) {

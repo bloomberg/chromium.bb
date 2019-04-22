@@ -363,14 +363,11 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
             this, base::FilePath(), base::BindRepeating(&IsOriginSecure),
             base::BindRepeating(&DownloadRequestUtils::IsURLSafe));
   } else {
-    in_progress_manager_->set_delegate(this);
+    in_progress_manager_->SetDelegate(this);
     in_progress_manager_->set_download_start_observer(nullptr);
     in_progress_manager_->set_is_origin_secure_cb(
         base::BindRepeating(&IsOriginSecure));
   }
-  in_progress_manager_->NotifyWhenInitialized(base::BindOnce(
-      &DownloadManagerImpl::OnInProgressDownloadManagerInitialized,
-      weak_factory_.GetWeakPtr()));
 }
 
 DownloadManagerImpl::~DownloadManagerImpl() {
@@ -600,7 +597,7 @@ base::FilePath DownloadManagerImpl::GetDefaultDownloadDirectory() {
   return default_download_directory;
 }
 
-void DownloadManagerImpl::OnInProgressDownloadManagerInitialized() {
+void DownloadManagerImpl::OnDownloadsInitialized() {
   in_progress_downloads_ = in_progress_manager_->TakeInProgressDownloads();
   uint32_t max_id = download::DownloadItem::kInvalidId;
   for (auto it = in_progress_downloads_.begin();

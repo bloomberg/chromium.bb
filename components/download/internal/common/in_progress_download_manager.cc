@@ -143,6 +143,22 @@ void OnDownloadDisplayNamesReturned(
 #endif
 }  // namespace
 
+bool InProgressDownloadManager::Delegate::InterceptDownload(
+    const DownloadCreateInfo& download_create_info) {
+  return false;
+}
+
+base::FilePath
+InProgressDownloadManager::Delegate::GetDefaultDownloadDirectory() {
+  return base::FilePath();
+}
+
+net::URLRequestContextGetter*
+InProgressDownloadManager::Delegate::GetURLRequestContextGetter(
+    const DownloadCreateInfo& download_create_info) {
+  return nullptr;
+}
+
 InProgressDownloadManager::InProgressDownloadManager(
     Delegate* delegate,
     const base::FilePath& in_progress_db_dir,
@@ -511,6 +527,7 @@ void InProgressDownloadManager::OnDownloadNamesRetrieved(
   if (num_duplicates > 0)
     RecordDuplicateInProgressDownloadIdCount(num_duplicates);
   OnInitialized();
+  OnDownloadsInitialized();
 }
 
 std::vector<std::unique_ptr<download::DownloadItemImpl>>
@@ -533,6 +550,28 @@ base::FilePath InProgressDownloadManager::GetDownloadDisplayName(
 void InProgressDownloadManager::OnAllInprogressDownloadsLoaded() {
   download_entries_.clear();
   display_names_.reset();
+}
+
+void InProgressDownloadManager::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
+  if (initialized_)
+    OnDownloadsInitialized();
+}
+
+void InProgressDownloadManager::OnDownloadsInitialized() {
+  if (delegate_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&InProgressDownloadManager::NotifyDownloadsInitialized,
+                       weak_factory_.GetWeakPtr(),
+                       base::Unretained(delegate_)));
+  }
+}
+
+void InProgressDownloadManager::NotifyDownloadsInitialized(Delegate* delegate) {
+  // Do nothing if |delegate_| changes while posing the task.
+  if (delegate_ == delegate)
+    delegate_->OnDownloadsInitialized();
 }
 
 void InProgressDownloadManager::AddInProgressDownloadForTest(

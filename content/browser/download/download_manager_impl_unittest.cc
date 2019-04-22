@@ -523,7 +523,7 @@ class DownloadManagerTest : public testing::Test {
   }
 
   void OnInProgressDownloadManagerInitialized() {
-    download_manager_->OnInProgressDownloadManagerInitialized();
+    download_manager_->OnDownloadsInitialized();
   }
 
   void OnHistoryDBInitialized() {

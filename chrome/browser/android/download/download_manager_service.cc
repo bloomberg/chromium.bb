@@ -84,6 +84,7 @@ void RenameItemCallback(
       static_cast<int>(
           OfflineItemUtils::ConvertDownloadRenameResultToRenameResult(result)));
 }
+
 }  // namespace
 
 // static
@@ -710,11 +711,9 @@ void DownloadManagerService::CreateInProgressDownloadManager() {
   in_progress_manager_->set_url_loader_factory_getter(
       base::MakeRefCounted<download::DownloadURLLoaderFactoryGetterImpl>(
           factory->Clone()));
-  in_progress_manager_->NotifyWhenInitialized(
-      base::BindOnce(&DownloadManagerService::OnPendingDownloadsLoaded,
-                     base::Unretained(this)));
   in_progress_manager_->set_download_start_observer(
       DownloadControllerBase::Get());
+  in_progress_manager_->SetDelegate(this);
 }
 
 void DownloadManagerService::OnPendingDownloadsLoaded() {
@@ -759,6 +758,13 @@ void DownloadManagerService::OnPendingDownloadsLoaded() {
     }
   }
   pending_actions_.clear();
+}
+
+void DownloadManagerService::OnDownloadsInitialized() {
+  // We are no longer interested in listening to |in_progress_manager_|, remove
+  // this object from being the delegate.
+  in_progress_manager_->SetDelegate(nullptr);
+  OnPendingDownloadsLoaded();
 }
 
 content::DownloadManager* DownloadManagerService::GetDownloadManager(

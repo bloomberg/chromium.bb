@@ -130,6 +130,7 @@ source_set("unit_tests") {
   }
 
   sources = [
+    "all_download_event_notifier_unittest.cc",
     "base_file_unittest.cc",
     "base_file_win_unittest.cc",
     "download_db_cache_unittest.cc",
