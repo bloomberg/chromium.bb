@@ -157,6 +157,7 @@ class StatusBubbleViews::StatusView : public views::View {
 
   // views::View:
   void Layout() override;
+  void OnThemeChanged() override;
 
   // Set the bubble text, or hide the bubble if |text| is an empty string.
   // Triggers an animation sequence to display if |should_animate_open| is true.
@@ -203,6 +204,9 @@ class StatusBubbleViews::StatusView : public views::View {
   void StartHiding();
   void StartShowing();
 
+  // Set the text label's colors according to the theme.
+  void SetTextLabelColors(views::Label* label);
+
   // views::View:
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
@@ -235,16 +239,10 @@ StatusBubbleViews::StatusView::StatusView(StatusBubbleViews* status_bubble,
     : status_bubble_(status_bubble), popup_size_(popup_size) {
   animation_ = std::make_unique<StatusViewAnimation>(this, 0, 0);
 
-  // Text color is the foreground tab text color at 60% alpha.
   std::unique_ptr<views::Label> text = std::make_unique<views::Label>();
-  const auto* theme_provider = status_bubble_->base_view()->GetThemeProvider();
-  SkColor bubble_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_STATUS_BUBBLE);
-  SkColor blended_text_color = color_utils::AlphaBlend(
-      theme_provider->GetColor(ThemeProperties::COLOR_TAB_TEXT), bubble_color,
-      0.6f);
-  text->SetEnabledColor(color_utils::GetColorWithMinimumContrast(
-      blended_text_color, bubble_color));
+  // Don't move this after AddChildView() since this function would trigger
+  // repaint which should not happen in the constructor.
+  SetTextLabelColors(text.get());
   text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_ = AddChildView(std::move(text));
 }
@@ -262,6 +260,10 @@ void StatusBubbleViews::StatusView::Layout() {
   // Make sure the text is aligned to the right on RTL UIs.
   text_rect = GetMirroredRect(text_rect);
   text_->SetBoundsRect(text_rect);
+}
+
+void StatusBubbleViews::StatusView::OnThemeChanged() {
+  SetTextLabelColors(text_);
 }
 
 void StatusBubbleViews::StatusView::SetText(const base::string16& text,
@@ -425,6 +427,17 @@ void StatusBubbleViews::StatusView::OnAnimationEnded() {
 void StatusBubbleViews::StatusView::SetWidth(int new_width) {
   popup_size_.set_width(new_width);
   Layout();
+}
+
+void StatusBubbleViews::StatusView::SetTextLabelColors(views::Label* text) {
+  const auto* theme_provider = status_bubble_->base_view()->GetThemeProvider();
+  SkColor bubble_color =
+      theme_provider->GetColor(ThemeProperties::COLOR_STATUS_BUBBLE);
+  text->SetBackgroundColor(bubble_color);
+  // Text color is the foreground tab text color at 60% alpha.
+  text->SetEnabledColor(color_utils::AlphaBlend(
+      theme_provider->GetColor(ThemeProperties::COLOR_TAB_TEXT), bubble_color,
+      0.6f));
 }
 
 const char* StatusBubbleViews::StatusView::GetClassName() const {
@@ -742,6 +755,11 @@ int StatusBubbleViews::GetWidthForURL(const base::string16& url_string) {
   // Add proper paddings
   return elided_url_width + (kShadowThickness * 2) + kTextPositionX +
          kTextHorizPadding + 1;
+}
+
+void StatusBubbleViews::OnThemeChanged() {
+  if (popup_)
+    popup_->ThemeChanged();
 }
 
 void StatusBubbleViews::SetStatus(const base::string16& status_text) {

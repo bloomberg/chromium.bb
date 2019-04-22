@@ -2451,6 +2451,9 @@ void BrowserView::OnThemeChanged() {
     ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
   }
 
+  if (status_bubble_)
+    status_bubble_->OnThemeChanged();
+
   views::View::OnThemeChanged();
 }
 
