@@ -45,6 +45,7 @@ class StatusMediator {
 
     StatusMediator(PropertyModel model) {
         mModel = model;
+        updateColorTheme();
     }
 
     /**
