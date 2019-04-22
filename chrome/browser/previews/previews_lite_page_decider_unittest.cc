@@ -11,6 +11,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
+#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
@@ -22,6 +23,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -259,4 +262,53 @@ TEST_F(PreviewsLitePageDeciderPrefTest, TestDRPEnabledThenNotify) {
       ->NavigateAndCommit(GURL(kTestUrl));
 
   EXPECT_FALSE(manager->NeedsToNotifyUser());
+}
+
+class TestPreviewsLitePageDeciderWebContentsObserver
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<
+          TestPreviewsLitePageDeciderWebContentsObserver> {
+ public:
+  explicit TestPreviewsLitePageDeciderWebContentsObserver(
+      content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  ~TestPreviewsLitePageDeciderWebContentsObserver() override {}
+
+  uint64_t last_navigation_page_id() { return last_navigation_page_id_; }
+
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    auto* chrome_navigation_ui_data =
+        static_cast<const ChromeNavigationUIData*>(
+            navigation_handle->GetNavigationUIData());
+    last_navigation_page_id_ =
+        chrome_navigation_ui_data->data_reduction_proxy_page_id();
+  }
+
+ private:
+  friend class content::WebContentsUserData<
+      TestPreviewsLitePageDeciderWebContentsObserver>;
+  uint64_t last_navigation_page_id_ = 0;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+};
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TestPreviewsLitePageDeciderWebContentsObserver)
+
+TEST_F(PreviewsLitePageDeciderPrefTest, TestDRPPageIDIncremented) {
+  TestPreviewsLitePageDeciderWebContentsObserver::CreateForWebContents(
+      web_contents());
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL(kTestUrl));
+
+  uint64_t last_navigation_page_id =
+      TestPreviewsLitePageDeciderWebContentsObserver::FromWebContents(
+          web_contents())
+          ->last_navigation_page_id();
+
+  // Tests that the page ID is set for the last navigation, and subsequent
+  // generates give an increment.
+  EXPECT_NE(static_cast<uint64_t>(0U), last_navigation_page_id);
+  EXPECT_EQ(
+      static_cast<uint64_t>(last_navigation_page_id + 1U),
+      PreviewsLitePageDecider::GeneratePageIdForWebContents(web_contents()));
 }

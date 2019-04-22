@@ -223,6 +223,22 @@ PreviewsLitePageDecider::MaybeCreateThrottleFor(
   return nullptr;
 }
 
+// static
+uint64_t PreviewsLitePageDecider::GeneratePageIdForWebContents(
+    content::WebContents* web_contents) {
+  return PreviewsLitePageDecider::GeneratePageIdForProfile(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+}
+
+// static
+uint64_t PreviewsLitePageDecider::GeneratePageIdForProfile(Profile* profile) {
+  PreviewsService* previews_service =
+      PreviewsServiceFactory::GetForProfile(profile);
+  return previews_service
+             ? previews_service->previews_lite_page_decider()->GeneratePageID()
+             : 0;
+}
+
 void PreviewsLitePageDecider::OnProxyRequestHeadersChanged(
     const net::HttpRequestHeaders& headers) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

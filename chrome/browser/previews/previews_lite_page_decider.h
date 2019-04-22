@@ -21,11 +21,14 @@
 #include "net/http/http_request_headers.h"
 
 class PrefService;
+class Profile;
 
 namespace content {
 class BrowserContext;
 class NavigationHandle;
 class NavigationThrottle;
+class WebContents;
+
 }  // namespace content
 
 namespace user_prefs {
@@ -50,6 +53,11 @@ class PreviewsLitePageDecider
   // making.
   static std::unique_ptr<content::NavigationThrottle> MaybeCreateThrottleFor(
       content::NavigationHandle* handle);
+
+  // Helpers to generate page ID.
+  static uint64_t GeneratePageIdForWebContents(
+      content::WebContents* web_contents);
+  static uint64_t GeneratePageIdForProfile(Profile* profile);
 
   // Removes |this| as a DataReductionProxySettingsObserver.
   void Shutdown();
