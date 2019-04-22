@@ -823,11 +823,28 @@ Affects:
     libavformat/apetag.c
 
 ------------------------------------------------------------------
-commit 88c07c9c7146556b172833cd39a2d666541ba8e9
+commit d17a8c9b951d5c4cc8fd2027db48b657deec290f
 Author: Dan Sanders <sandersd@chromium.org>
-Date:   Fri Apr 19 14:43:13 2019 -0700
+Date:   Fri Apr 19 14:52:58 2019 -0700
 
-    Fix.
+    libavformat/mov: limit nb_frames_for_fps to INT_MAX
+
+    Bug: 827894
+    Change-Id: I0de1422ba7c8bfb4d66675552d5704bb86ea1fe2
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/1575672
+    Reviewed-by: Chrome Cunningham <chcunningham@chromium.org>
+
+Affects:
+    libavformat/mov.c
+
+------------------------------------------------------------------
+commit b29a01f73ac4f233f2fc3ac45cf9f36d49b30b56
+Author: Dan Sanders <sandersd@chromium.org>
+Date:   Mon Apr 22 11:06:43 2019 -0700
+
+    libavformat/mov: limit nb_frames_for_fps to INT_MAX
+
+    Part 2.
 
 Affects:
     libavformat/mov.c
