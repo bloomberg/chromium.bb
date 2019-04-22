@@ -12,6 +12,9 @@
 #include "base/values.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/shell_integration_win.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -140,9 +143,12 @@ void WelcomeWin10Handler::HandleSetDefaultBrowser(const base::ListValue* args) {
 }
 
 void WelcomeWin10Handler::HandleContinue(const base::ListValue* args) {
-  web_ui()->GetWebContents()->GetController().LoadURL(
-      GURL(chrome::kChromeUINewTabURL), content::Referrer(),
-      ui::PageTransition::PAGE_TRANSITION_LINK, std::string());
+  content::WebContents* contents = web_ui()->GetWebContents();
+  Browser* browser = chrome::FindBrowserWithWebContents(contents);
+  NavigateParams params(browser, GURL(chrome::kChromeUINewTabURL),
+                        ui::PageTransition::PAGE_TRANSITION_LINK);
+  params.source_contents = web_ui()->GetWebContents();
+  Navigate(&params);
 }
 
 void WelcomeWin10Handler::StartIsPinnedToTaskbarCheck() {
