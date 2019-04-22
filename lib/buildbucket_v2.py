@@ -62,7 +62,7 @@ def UpdateSelfCommonBuildProperties(
     platform_version=None, full_version=None, toolchain_url=None,
     build_type=None, unibuild=None, suite_scheduling=None,
     killed_child_builds=None, board=None, main_firmware_version=None,
-    ec_firmware_version=None):
+    ec_firmware_version=None, metadata_url=None):
   """Update build.output.properties for the current build.
 
   Sends the property values to buildbucket via
@@ -85,6 +85,7 @@ def UpdateSelfCommonBuildProperties(
     board: (Optional) board of the build.
     main_firmware_version: (Optional) main firmware version of the build.
     ec_firmware_version: (Optional) ec_firmware version of the build.
+    metadata_url: (Optional) google storage url to metadata.json of the build.
   """
   if critical is not None:
     critical = 1 if critical in [1, True] else 0
@@ -118,6 +119,8 @@ def UpdateSelfCommonBuildProperties(
   if ec_firmware_version is not None:
     UpdateSelfBuildPropertiesNonBlocking('ec_firmware_version',
                                          ec_firmware_version)
+  if metadata_url is not None:
+    UpdateSelfBuildPropertiesNonBlocking('metadata_url', metadata_url)
 
 def UpdateBuildMetadata(metadata):
   """Update build.output.properties from a CBuildbotMetadata instance.
@@ -268,6 +271,7 @@ class BuildbucketV2(object):
         'full_version': 'full_version',
         'milestone_version': 'milestone_version',
         'toolchain_url': 'toolchain_url',
+        'metadata_url': 'metadata_url',
         'critical': 'important',
         'build_type': 'build_type',
         'summary': 'summary',
@@ -328,7 +332,6 @@ class BuildbucketV2(object):
     build_status['build_number'] = None
     build_status['buildbot_generation'] = None
     build_status['waterfall'] = None
-    build_status['metadata_url'] = None
     build_status['deadline'] = None
     # Post-processing some properties.
     if (build_status['status'] is not None and

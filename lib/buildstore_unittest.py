@@ -340,7 +340,8 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     """Tests the redirect for FinishBuild function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
-    bs = BuildStore()
+    bs = BuildStore(_write_to_bb=True, _write_to_cidb=True)
+    buildbucket_v2.UpdateSelfCommonBuildProperties = mock.MagicMock()
     bs.cidb_conn = mock.MagicMock()
     status = mock.Mock()
     summary = mock.Mock()
@@ -352,6 +353,8 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     bs.cidb_conn.FinishBuild.assert_called_once_with(
         constants.MOCK_BUILD_ID, status=status, summary=summary,
         metadata_url=metadata_url, strict=strict)
+    buildbucket_v2.UpdateSelfCommonBuildProperties.assert_called_once_with(
+        metadata_url=metadata_url)
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
       bs.FinishBuild(constants.MOCK_BUILD_ID, status=status, summary=summary,

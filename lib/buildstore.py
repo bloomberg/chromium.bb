@@ -357,16 +357,15 @@ class BuildStore(object):
         entry ignoring the 'final' value (For example, a build was marked as
         status='aborted' and final='true', a cron job to adjust the finish_time
         will call this method with strict=False).
-
-    Returns:
-      The number of rows that were updated.
     """
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
     if self._write_to_cidb:
-      return self.cidb_conn.FinishBuild(
+      self.cidb_conn.FinishBuild(
           build_id, status=status, summary=summary, metadata_url=metadata_url,
           strict=strict)
+    if self._write_to_bb:
+      buildbucket_v2.UpdateSelfCommonBuildProperties(metadata_url=metadata_url)
 
   def FinishChildConfig(self, build_id, child_config, status=None):
     """Marks the given child config as finished with |status|.
