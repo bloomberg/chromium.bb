@@ -493,9 +493,11 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   // The shadow will overlap the window frame. Clip it off when the bubble is
   // docked. Otherwise when the bubble is floating preserve the full shadow so
   // the bubble looks complete.
-  const int clip_left = style_ == STYLE_STANDARD ? shadow_thickness_pixels : 0;
-  const int clip_right =
-      style_ == STYLE_STANDARD_RIGHT ? shadow_thickness_pixels : 0;
+  int clip_left = style_ == STYLE_STANDARD ? shadow_thickness_pixels : 0;
+  int clip_right = style_ == STYLE_STANDARD_RIGHT ? shadow_thickness_pixels : 0;
+  if (base::i18n::IsRTL())
+    std::swap(clip_left, clip_right);
+
   const int clip_bottom = clip_left || clip_right ? shadow_thickness_pixels : 0;
   gfx::Rect clip_rect(clip_left, 0, width - clip_right, height - clip_bottom);
   canvas->ClipRect(clip_rect);
