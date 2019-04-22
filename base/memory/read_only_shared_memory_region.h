@@ -39,6 +39,7 @@ class BASE_EXPORT ReadOnlySharedMemoryRegion {
   // mojo/public/cpp/base/shared_memory_utils.h for creating a shared memory
   // region from a an unprivileged process where a broker must be used.
   static MappedReadOnlyRegion Create(size_t size);
+  using CreateFunction = decltype(Create);
 
   // Returns a ReadOnlySharedMemoryRegion built from a platform-specific handle
   // that was taken from another ReadOnlySharedMemoryRegion instance. Returns an
@@ -105,6 +106,7 @@ class BASE_EXPORT ReadOnlySharedMemoryRegion {
   FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest,
                            SerializeSharedMemoryRegionMetadata);
   friend class FieldTrialList;
+  friend class SharedMemoryHooks;
 
   explicit ReadOnlySharedMemoryRegion(
       subtle::PlatformSharedMemoryRegion handle);
@@ -115,6 +117,10 @@ class BASE_EXPORT ReadOnlySharedMemoryRegion {
     DCHECK(IsValid());
     return handle_.GetPlatformHandle();
   }
+
+  static void set_create_hook(CreateFunction* hook) { create_hook_ = hook; }
+
+  static CreateFunction* create_hook_;
 
   subtle::PlatformSharedMemoryRegion handle_;
 

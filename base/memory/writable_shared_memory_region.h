@@ -35,6 +35,7 @@ class BASE_EXPORT WritableSharedMemoryRegion {
   // mojo/public/cpp/base/shared_memory_utils.h for creating a shared memory
   // region from a an unprivileged process where a broker must be used.
   static WritableSharedMemoryRegion Create(size_t size);
+  using CreateFunction = decltype(Create);
 
   // Returns a WritableSharedMemoryRegion built from a platform handle that was
   // taken from another WritableSharedMemoryRegion instance. Returns an invalid
@@ -102,8 +103,14 @@ class BASE_EXPORT WritableSharedMemoryRegion {
   }
 
  private:
+  friend class SharedMemoryHooks;
+
   explicit WritableSharedMemoryRegion(
       subtle::PlatformSharedMemoryRegion handle);
+
+  static void set_create_hook(CreateFunction* hook) { create_hook_ = hook; }
+
+  static CreateFunction* create_hook_;
 
   subtle::PlatformSharedMemoryRegion handle_;
 
