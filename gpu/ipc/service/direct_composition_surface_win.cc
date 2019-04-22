@@ -509,7 +509,8 @@ class DCLayerTree::SwapChainPresenter {
     kNonDecoderTexture = 3,
     kSharedTexture = 4,
     kIncompatibleTransform = 5,
-    kMaxValue = kIncompatibleTransform,
+    kUnitaryTextureArray = 6,
+    kMaxValue = kUnitaryTextureArray,
   };
 
   // Upload given YUV buffers to an NV12 texture that can be used to create
@@ -1080,6 +1081,10 @@ bool DCLayerTree::SwapChainPresenter::TryPresentToDecodeSwapChain(
         (D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX |
          D3D11_RESOURCE_MISC_SHARED_NTHANDLE);
 
+    // DXVA decoder (or rather MFT) sometimes gives texture arrays with one
+    // element, which constitutes most of decode swap chain creation failures.
+    bool is_unitary_texture_array = texture_desc.ArraySize <= 1;
+
     // Rotated videos are not promoted to overlays.  We plan to implement
     // rotation using video processor instead of via direct composition.  Also
     // check for skew and any downscaling specified to direct composition.
@@ -1098,7 +1103,7 @@ bool DCLayerTree::SwapChainPresenter::TryPresentToDecodeSwapChain(
                                      (swap_chain_scale_x >= 1.0f) &&
                                      (swap_chain_scale_y >= 1.0f);
 
-    if (is_decoder_texture && !is_shared_texture &&
+    if (is_decoder_texture && !is_shared_texture && !is_unitary_texture_array &&
         is_overlay_supported_transform) {
       if (PresentToDecodeSwapChain(image_dxgi, content_rect, swap_chain_size))
         return true;
@@ -1111,6 +1116,8 @@ bool DCLayerTree::SwapChainPresenter::TryPresentToDecodeSwapChain(
       not_used_reason = DecodeSwapChainNotUsedReason::kNonDecoderTexture;
     } else if (is_shared_texture) {
       not_used_reason = DecodeSwapChainNotUsedReason::kSharedTexture;
+    } else if (is_unitary_texture_array) {
+      not_used_reason = DecodeSwapChainNotUsedReason::kUnitaryTextureArray;
     } else if (!is_overlay_supported_transform) {
       not_used_reason = DecodeSwapChainNotUsedReason::kIncompatibleTransform;
     }
