@@ -924,7 +924,8 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   }
 
   // Show widget next time Commit() is called.
-  pending_show_widget_ = true;
+  if (show_state != ui::SHOW_STATE_MINIMIZED)
+    pending_show_widget_ = true;
 }
 
 bool ShellSurfaceBase::IsResizing() const {
