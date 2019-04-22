@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
+#include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
 class Browser;

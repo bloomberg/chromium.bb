@@ -790,6 +790,8 @@ jumbo_split_static_library("ui") {
       "bookmarks/bookmark_context_menu_controller.h",
       "bookmarks/bookmark_drag_drop.cc",
       "bookmarks/bookmark_drag_drop.h",
+      "bookmarks/bookmark_stats.cc",
+      "bookmarks/bookmark_stats.h",
       "bookmarks/bookmark_tab_helper.cc",
       "bookmarks/bookmark_tab_helper.h",
       "bookmarks/bookmark_tab_helper_observer.h",

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_STATS_H_
-#define CHROME_BROWSER_BOOKMARKS_BOOKMARK_STATS_H_
+#ifndef CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_STATS_H_
+#define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_STATS_H_
 
 namespace bookmarks {
 class BookmarkNode;
@@ -16,7 +16,7 @@ enum BookmarkEntryPoint {
   BOOKMARK_ENTRY_POINT_STAR_KEY,
   BOOKMARK_ENTRY_POINT_STAR_MOUSE,
 
-  BOOKMARK_ENTRY_POINT_LIMIT // Keep this last.
+  BOOKMARK_ENTRY_POINT_LIMIT  // Keep this last.
 };
 
 // This enum is used for the Bookmarks.LaunchLocation histogram.
@@ -58,4 +58,4 @@ void RecordBookmarkFolderOpen(BookmarkLaunchLocation location);
 // Records the user opening the apps page for UMA purposes.
 void RecordBookmarkAppsPageOpen(BookmarkLaunchLocation location);
 
-#endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_STATS_H_
+#endif  // CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_STATS_H_

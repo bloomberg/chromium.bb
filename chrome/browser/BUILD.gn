@@ -167,8 +167,6 @@ jumbo_split_static_library("browser") {
     "bitmap_fetcher/bitmap_fetcher_service_factory.h",
     "bookmarks/bookmark_model_factory.cc",
     "bookmarks/bookmark_model_factory.h",
-    "bookmarks/bookmark_stats.cc",
-    "bookmarks/bookmark_stats.h",
     "bookmarks/chrome_bookmark_client.cc",
     "bookmarks/chrome_bookmark_client.h",
     "bookmarks/managed_bookmark_service_factory.cc",
