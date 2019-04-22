@@ -264,6 +264,381 @@ static const char *level_fail_messages[TARGET_LEVEL_FAIL_IDS] = {
   "The bitrate is too high.",
 };
 
+static double get_max_bitrate(const AV1LevelSpec *const level_spec, int tier,
+                              BITSTREAM_PROFILE profile) {
+  if (level_spec->level < SEQ_LEVEL_4_0) tier = 0;
+  const double bitrate_basis =
+      (tier ? level_spec->high_mbps : level_spec->main_mbps) * 1e6;
+  const double bitrate_profile_factor =
+      profile == PROFILE_0 ? 1.0 : (profile == PROFILE_1 ? 2.0 : 3.0);
+  return bitrate_basis * bitrate_profile_factor;
+}
+
+// We assume time t to be valid if and only if t >= 0.0.
+// So INVALID_TIME can be defined as anything less than 0.
+#define INVALID_TIME (-1.0)
+
+// This corresponds to "free_buffer" in the spec.
+static void release_buffer(DECODER_MODEL *const decoder_model, int idx) {
+  assert(idx >= 0 && idx < BUFFER_POOL_MAX_SIZE);
+  FRAME_BUFFER *const this_buffer = &decoder_model->frame_buffer_pool[idx];
+  this_buffer->decoder_ref_count = 0;
+  this_buffer->player_ref_count = 0;
+  this_buffer->display_index = -1;
+  this_buffer->presentation_time = INVALID_TIME;
+}
+
+static void initialize_buffer_pool(DECODER_MODEL *const decoder_model) {
+  for (int i = 0; i < BUFFER_POOL_MAX_SIZE; ++i) {
+    release_buffer(decoder_model, i);
+  }
+  for (int i = 0; i < REF_FRAMES; ++i) {
+    decoder_model->vbi[i] = -1;
+  }
+}
+
+static int get_free_buffer(DECODER_MODEL *const decoder_model) {
+  for (int i = 0; i < BUFFER_POOL_MAX_SIZE; ++i) {
+    const FRAME_BUFFER *const this_buffer =
+        &decoder_model->frame_buffer_pool[i];
+    if (this_buffer->decoder_ref_count == 0 &&
+        this_buffer->player_ref_count == 0)
+      return i;
+  }
+  return -1;
+}
+
+static void update_ref_buffers(DECODER_MODEL *const decoder_model, int idx,
+                               int refresh_frame_flags) {
+  FRAME_BUFFER *const this_buffer = &decoder_model->frame_buffer_pool[idx];
+  for (int i = 0; i < REF_FRAMES; ++i) {
+    if (refresh_frame_flags & (1 << i)) {
+      const int pre_idx = decoder_model->vbi[i];
+      if (pre_idx != -1) {
+        --decoder_model->frame_buffer_pool[pre_idx].decoder_ref_count;
+      }
+      decoder_model->vbi[i] = idx;
+      ++this_buffer->decoder_ref_count;
+    }
+  }
+}
+
+// The time (in seconds) required to decode a frame.
+static double time_to_decode_frame(const AV1_COMMON *const cm,
+                                   int64_t max_decode_rate) {
+  if (cm->show_existing_frame) return 0.0;
+
+  const FRAME_TYPE frame_type = cm->current_frame.frame_type;
+  int luma_samples = 0;
+  if (frame_type == KEY_FRAME || frame_type == INTRA_ONLY_FRAME) {
+    luma_samples = cm->superres_upscaled_width * cm->height;
+  } else {
+    const int spatial_layer_dimensions_present_flag = 0;
+    if (spatial_layer_dimensions_present_flag) {
+      assert(0 && "Spatial layer dimensions not supported yet.");
+    } else {
+      const SequenceHeader *const seq_params = &cm->seq_params;
+      const int max_frame_width = seq_params->max_frame_width;
+      const int max_frame_height = seq_params->max_frame_height;
+      luma_samples = max_frame_width * max_frame_height;
+    }
+  }
+
+  return luma_samples / (double)max_decode_rate;
+}
+
+// Release frame buffers that are no longer needed for decode or display.
+// It corresponds to "start_decode_at_removal_time" in the spec.
+static void release_processed_frames(DECODER_MODEL *const decoder_model,
+                                     double removal_time) {
+  for (int i = 0; i < BUFFER_POOL_MAX_SIZE; ++i) {
+    FRAME_BUFFER *const this_buffer = &decoder_model->frame_buffer_pool[i];
+    if (this_buffer->player_ref_count > 0) {
+      if (this_buffer->presentation_time >= 0.0 &&
+          this_buffer->presentation_time <= removal_time) {
+        this_buffer->player_ref_count = 0;
+        if (this_buffer->decoder_ref_count == 0) {
+          release_buffer(decoder_model, i);
+        }
+      }
+    }
+  }
+}
+
+static int frames_in_buffer_pool(const DECODER_MODEL *const decoder_model) {
+  int frames_in_pool = 0;
+  for (int i = 0; i < BUFFER_POOL_MAX_SIZE; ++i) {
+    const FRAME_BUFFER *const this_buffer =
+        &decoder_model->frame_buffer_pool[i];
+    if (this_buffer->decoder_ref_count > 0 ||
+        this_buffer->player_ref_count > 0) {
+      ++frames_in_pool;
+    }
+  }
+  return frames_in_pool;
+}
+
+static double get_presentation_time(const DECODER_MODEL *const decoder_model,
+                                    int display_index) {
+  if (decoder_model->mode == SCHEDULE_MODE) {
+    assert(0 && "SCHEDULE_MODE NOT SUPPORTED");
+    return INVALID_TIME;
+  } else {
+    const double initial_presentation_delay =
+        decoder_model->initial_presentation_delay;
+    // Can't decide presentation time until the initial presentation delay is
+    // known.
+    if (initial_presentation_delay < 0.0) return INVALID_TIME;
+
+    return initial_presentation_delay +
+           display_index * decoder_model->num_ticks_per_picture *
+               decoder_model->display_clock_tick;
+  }
+}
+
+#define MAX_TIME 1e16
+double time_next_buffer_is_free(const DECODER_MODEL *const decoder_model) {
+  if (decoder_model->num_decoded_frame == 0) {
+    return (double)decoder_model->decoder_buffer_delay / 90000.0;
+  }
+
+  double buf_free_time = MAX_TIME;
+  for (int i = 0; i < BUFFER_POOL_MAX_SIZE; ++i) {
+    const FRAME_BUFFER *const this_buffer =
+        &decoder_model->frame_buffer_pool[i];
+    if (this_buffer->decoder_ref_count == 0) {
+      if (this_buffer->player_ref_count == 0) {
+        return decoder_model->current_time;
+      }
+      const double presentation_time = this_buffer->presentation_time;
+      if (presentation_time >= 0.0 && presentation_time < buf_free_time) {
+        buf_free_time = presentation_time;
+      }
+    }
+  }
+  return buf_free_time < MAX_TIME ? buf_free_time : INVALID_TIME;
+}
+#undef MAX_TIME
+
+static double get_removal_time(const DECODER_MODEL *const decoder_model) {
+  if (decoder_model->mode == SCHEDULE_MODE) {
+    assert(0 && "SCHEDULE_MODE IS NOT SUPPORTED YET");
+    return INVALID_TIME;
+  } else {
+    return time_next_buffer_is_free(decoder_model);
+  }
+}
+
+void av1_decoder_model_print_status(const DECODER_MODEL *const decoder_model) {
+  printf(
+      "\n status %d, num_frame %3d, num_decoded_frame %3d, "
+      "num_shown_frame %3d, current time %6.2f, frames in buffer %2d, "
+      "presentation delay %6.2f, total interval %6.2f\n",
+      decoder_model->status, decoder_model->num_frame,
+      decoder_model->num_decoded_frame, decoder_model->num_shown_frame,
+      decoder_model->current_time, frames_in_buffer_pool(decoder_model),
+      decoder_model->initial_presentation_delay,
+      decoder_model->dfg_interval_queue.total_interval);
+  for (int i = 0; i < 10; ++i) {
+    const FRAME_BUFFER *const this_buffer =
+        &decoder_model->frame_buffer_pool[i];
+    printf("buffer %d, decode count %d, display count %d, present time %6.4f\n",
+           i, this_buffer->decoder_ref_count, this_buffer->player_ref_count,
+           this_buffer->presentation_time);
+  }
+}
+
+// op_index is the operating point index.
+void av1_decoder_model_init(const AV1_COMP *const cpi, AV1_LEVEL level,
+                            int op_index, DECODER_MODEL *const decoder_model) {
+  aom_clear_system_state();
+
+  decoder_model->status = DECODER_MODEL_OK;
+  decoder_model->level = level;
+
+  const AV1_COMMON *const cm = &cpi->common;
+  const SequenceHeader *const seq_params = &cm->seq_params;
+  decoder_model->bit_rate = get_max_bitrate(
+      av1_level_defs + level, seq_params->tier[op_index], seq_params->profile);
+
+  // TODO(huisu or anyone): implement SCHEDULE_MODE.
+  decoder_model->mode = RESOURCE_MODE;
+  decoder_model->encoder_buffer_delay = 20000;
+  decoder_model->decoder_buffer_delay = 70000;
+  decoder_model->is_low_delay_mode = false;
+
+  decoder_model->first_bit_arrival_time = 0.0;
+  decoder_model->last_bit_arrival_time = 0.0;
+  decoder_model->coded_bits = 0;
+
+  decoder_model->num_frame = -1;
+  decoder_model->num_decoded_frame = -1;
+  decoder_model->num_shown_frame = -1;
+  decoder_model->current_time = 0.0;
+
+  initialize_buffer_pool(decoder_model);
+
+  DFG_INTERVAL_QUEUE *const dfg_interval_queue =
+      &decoder_model->dfg_interval_queue;
+  dfg_interval_queue->total_interval = 0.0;
+  dfg_interval_queue->head = 0;
+  dfg_interval_queue->size = 0;
+
+  if (cm->timing_info_present) {
+    decoder_model->num_ticks_per_picture =
+        cm->timing_info.num_ticks_per_picture;
+    decoder_model->display_clock_tick =
+        cm->timing_info.num_units_in_display_tick / cm->timing_info.time_scale;
+  } else {
+    decoder_model->num_ticks_per_picture = 1;
+    decoder_model->display_clock_tick = 1.0 / cpi->framerate;
+  }
+
+  decoder_model->initial_display_delay =
+      cm->op_params[op_index].initial_display_delay;
+  decoder_model->initial_presentation_delay = INVALID_TIME;
+  decoder_model->decode_rate = av1_level_defs[level].max_decode_rate;
+}
+
+void av1_decoder_model_process_frame(const AV1_COMP *const cpi,
+                                     size_t coded_bits,
+                                     DECODER_MODEL *const decoder_model) {
+  if (!decoder_model || decoder_model->status != DECODER_MODEL_OK) return;
+
+  aom_clear_system_state();
+
+  const AV1_COMMON *const cm = &cpi->common;
+  const int show_existing_frame = cm->show_existing_frame;
+  const int show_frame = cm->show_frame || show_existing_frame;
+  ++decoder_model->num_frame;
+  if (!show_existing_frame) ++decoder_model->num_decoded_frame;
+  if (show_frame) ++decoder_model->num_shown_frame;
+  decoder_model->coded_bits += coded_bits;
+
+  int display_idx = -1;
+  if (show_existing_frame) {
+    display_idx = decoder_model->vbi[cpi->existing_fb_idx_to_show];
+    if (display_idx < 0) {
+      decoder_model->status = DECODE_EXISTING_FRAME_BUF_EMPTY;
+      return;
+    }
+    if (decoder_model->frame_buffer_pool[display_idx].frame_type == KEY_FRAME) {
+      update_ref_buffers(decoder_model, display_idx, 0xFF);
+    }
+  } else {
+    const double removal_time = get_removal_time(decoder_model);
+    if (removal_time < 0.0) {
+      decoder_model->status = DECODE_FRAME_BUF_UNAVAILABLE;
+      return;
+    }
+
+    // A frame with show_existing_frame being false indicates the end of a DFG.
+    // Update the bits arrival time of this DFG.
+    const double buffer_delay = (decoder_model->encoder_buffer_delay +
+                                 decoder_model->decoder_buffer_delay) /
+                                90000.0;
+    const double latest_arrival_time = removal_time - buffer_delay;
+    decoder_model->first_bit_arrival_time =
+        AOMMAX(decoder_model->last_bit_arrival_time, latest_arrival_time);
+    decoder_model->last_bit_arrival_time =
+        decoder_model->first_bit_arrival_time +
+        (double)decoder_model->coded_bits / decoder_model->bit_rate;
+    // Smoothing buffer underflows if the last bit arrives after the removal
+    // time.
+    if (decoder_model->last_bit_arrival_time > removal_time &&
+        !decoder_model->is_low_delay_mode) {
+      decoder_model->status = SMOOTHING_BUFFER_UNDERFLOW;
+      return;
+    }
+    // Reset the coded bits for the next DFG.
+    decoder_model->coded_bits = 0;
+
+    // Check if the smoothing buffer overflows.
+    DFG_INTERVAL_QUEUE *const queue = &decoder_model->dfg_interval_queue;
+    if (queue->size >= DFG_INTERVAL_QUEUE_SIZE) {
+      assert(0);
+    }
+    const double first_bit_arrival_time = decoder_model->first_bit_arrival_time;
+    const double last_bit_arrival_time = decoder_model->last_bit_arrival_time;
+    // Remove the DFGs with removal time earlier than last_bit_arrival_time.
+    while (queue->buf[queue->head].removal_time <= last_bit_arrival_time &&
+           queue->size > 0) {
+      if (queue->buf[queue->head].removal_time - first_bit_arrival_time +
+              queue->total_interval >
+          1.0) {
+        decoder_model->status = SMOOTHING_BUFFER_OVERFLOW;
+        return;
+      }
+      queue->total_interval -= queue->buf[queue->head].last_bit_arrival_time -
+                               queue->buf[queue->head].first_bit_arrival_time;
+      queue->head = (queue->head + 1) % DFG_INTERVAL_QUEUE_SIZE;
+      --queue->size;
+    }
+    // Push current DFG into the queue.
+    const int queue_index =
+        (queue->head + queue->size++) % DFG_INTERVAL_QUEUE_SIZE;
+    queue->buf[queue_index].first_bit_arrival_time = first_bit_arrival_time;
+    queue->buf[queue_index].last_bit_arrival_time = last_bit_arrival_time;
+    queue->buf[queue_index].removal_time = removal_time;
+    queue->total_interval += last_bit_arrival_time - first_bit_arrival_time;
+    // The smoothing buffer can hold at most "bit_rate" bits, which is
+    // equivalent to 1 second of total interval.
+    if (queue->total_interval > 1.0) {
+      decoder_model->status = SMOOTHING_BUFFER_OVERFLOW;
+      return;
+    }
+
+    release_processed_frames(decoder_model, removal_time);
+    decoder_model->current_time =
+        removal_time + time_to_decode_frame(cm, decoder_model->decode_rate);
+
+    const int cfbi = get_free_buffer(decoder_model);
+    if (cfbi < 0) {
+      decoder_model->status = DECODE_FRAME_BUF_UNAVAILABLE;
+      return;
+    }
+    const CurrentFrame *const current_frame = &cm->current_frame;
+    decoder_model->frame_buffer_pool[cfbi].frame_type =
+        cm->current_frame.frame_type;
+    display_idx = cfbi;
+    update_ref_buffers(decoder_model, cfbi, current_frame->refresh_frame_flags);
+
+    if (decoder_model->initial_presentation_delay < 0.0) {
+      // Display can begin after required number of frames have been buffered.
+      if (frames_in_buffer_pool(decoder_model) >=
+          decoder_model->initial_display_delay) {
+        decoder_model->initial_presentation_delay = decoder_model->current_time;
+        // Update presentation time for each shown frame in the frame buffer.
+        for (int i = 0; i < BUFFER_POOL_MAX_SIZE; ++i) {
+          FRAME_BUFFER *const this_buffer =
+              &decoder_model->frame_buffer_pool[i];
+          if (this_buffer->player_ref_count == 0) continue;
+          assert(this_buffer->display_index >= 0);
+          this_buffer->presentation_time =
+              get_presentation_time(decoder_model, this_buffer->display_index);
+        }
+      }
+    }
+  }
+
+  // Display.
+  if (show_frame) {
+    assert(display_idx >= 0 && display_idx < BUFFER_POOL_MAX_SIZE);
+    FRAME_BUFFER *const this_buffer =
+        &decoder_model->frame_buffer_pool[display_idx];
+    ++this_buffer->player_ref_count;
+    this_buffer->display_index = decoder_model->num_shown_frame;
+    const double presentation_time =
+        get_presentation_time(decoder_model, this_buffer->display_index);
+    this_buffer->presentation_time = presentation_time;
+    if (presentation_time >= 0.0 &&
+        decoder_model->current_time > presentation_time) {
+      decoder_model->status = DISPLAY_FRAME_LATE;
+      return;
+    }
+  }
+}
+
 void av1_init_level_info(AV1LevelInfo *level_info) {
   memset(level_info, 0, MAX_NUM_OPERATING_POINTS * sizeof(*level_info));
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
@@ -304,16 +679,6 @@ static void get_temporal_parallel_params(int scalability_mode_idc,
   } else {
     (void)scalability_mode_idc;
   }
-}
-
-static double get_max_bitrate(const AV1LevelSpec *const level_spec, int tier,
-                              BITSTREAM_PROFILE profile) {
-  if (level_spec->level < SEQ_LEVEL_4_0) tier = 0;
-  const double bitrate_basis =
-      (tier ? level_spec->high_mbps : level_spec->main_mbps) * 1e6;
-  const double bitrate_profile_factor =
-      profile == PROFILE_0 ? 1.0 : (profile == PROFILE_1 ? 2.0 : 3.0);
-  return bitrate_basis * bitrate_profile_factor;
 }
 
 #define MAX_TILE_SIZE (4096 * 2304)
