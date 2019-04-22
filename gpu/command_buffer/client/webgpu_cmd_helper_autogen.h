@@ -20,4 +20,27 @@ void DawnCommands(uint32_t commands_shm_id,
   }
 }
 
+void AssociateMailboxImmediate(GLuint device_id,
+                               GLuint device_generation,
+                               GLuint id,
+                               GLuint generation,
+                               GLuint usage,
+                               const GLbyte* mailbox) {
+  const uint32_t size = webgpu::cmds::AssociateMailboxImmediate::ComputeSize();
+  webgpu::cmds::AssociateMailboxImmediate* c =
+      GetImmediateCmdSpaceTotalSize<webgpu::cmds::AssociateMailboxImmediate>(
+          size);
+  if (c) {
+    c->Init(device_id, device_generation, id, generation, usage, mailbox);
+  }
+}
+
+void DissociateMailbox(GLuint texture_id, GLuint texture_generation) {
+  webgpu::cmds::DissociateMailbox* c =
+      GetCmdSpace<webgpu::cmds::DissociateMailbox>();
+  if (c) {
+    c->Init(texture_id, texture_generation);
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_WEBGPU_CMD_HELPER_AUTOGEN_H_

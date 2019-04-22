@@ -63,13 +63,16 @@ SharedImageFactory::SharedImageFactory(
     SharedImageManager* shared_image_manager,
     ImageFactory* image_factory,
     MemoryTracker* memory_tracker,
-    bool is_using_skia_renderer)
+    bool is_using_skia_renderer,
+    bool use_gl)
     : mailbox_manager_(mailbox_manager),
       shared_image_manager_(shared_image_manager),
       memory_tracker_(std::make_unique<MemoryTypeTracker>(memory_tracker)),
       using_vulkan_(context_state && context_state->use_vulkan_gr_context()) {
-  gl_backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
-      gpu_preferences, workarounds, gpu_feature_info, image_factory);
+  if (use_gl) {
+    gl_backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
+        gpu_preferences, workarounds, gpu_feature_info, image_factory);
+  }
   // For X11
 #if (defined(USE_X11) || defined(OS_FUCHSIA)) && BUILDFLAG(ENABLE_VULKAN)
   if (using_vulkan_) {
@@ -84,8 +87,8 @@ SharedImageFactory::SharedImageFactory(
   // OSX
   DCHECK(!using_vulkan_);
   interop_backing_factory_ =
-      std::make_unique<SharedImageBackingFactoryIOSurface>(workarounds,
-                                                           gpu_feature_info);
+      std::make_unique<SharedImageBackingFactoryIOSurface>(
+          workarounds, gpu_feature_info, use_gl);
 #else
   // Others
   DCHECK(!using_vulkan_);
