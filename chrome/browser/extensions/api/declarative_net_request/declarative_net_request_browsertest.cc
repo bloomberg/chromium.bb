@@ -1104,6 +1104,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
       {"abc.com", 3, "redirect", get_url_for_host("def.com")},
       {"def.com", 4, "block", base::nullopt},
       {"def.com", 5, "redirect", get_url_for_host("xyz.com")},
+      {"ghi*", 6, "redirect", get_url_for_host("ghijk.com")},
   };
 
   // Load the extension.
@@ -1137,6 +1138,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
       {"abc.com", false, base::nullopt, base::nullopt},
       // def.com (blocked).
       {"def.com", false, base::nullopt, base::nullopt},
+      // ghi.com -> ghijk.com.
+      // Though ghijk.com still matches the redirect rule for |ghi*|, it will
+      // not redirect to itself.
+      {"ghi.com", true, std::string("ghijk.com"), 2},
   };
 
   for (const auto& test_case : test_cases) {
