@@ -271,8 +271,8 @@ class SiteSettingsHandlerTest : public testing::Test {
     ASSERT_TRUE(
         exception->GetString(site_settings::kDisplayName, &display_name));
     ASSERT_EQ(expected_display_name, display_name);
-    ASSERT_TRUE(exception->GetString(
-        site_settings::kEmbeddingOrigin, &embedding_origin));
+    ASSERT_TRUE(exception->GetString(site_settings::kEmbeddingOrigin,
+                                     &embedding_origin));
     ASSERT_EQ(expected_embedding, embedding_origin);
     ASSERT_TRUE(exception->GetString(site_settings::kSetting, &setting));
     ASSERT_EQ(content_settings::ContentSettingToString(expected_setting),
@@ -329,8 +329,8 @@ class SiteSettingsHandlerTest : public testing::Test {
     EXPECT_EQ(expected_reason, reason);
   }
 
-  void ValidateIncognitoExists(
-      bool expected_incognito, size_t expected_total_calls) {
+  void ValidateIncognitoExists(bool expected_incognito,
+                               size_t expected_total_calls) {
     EXPECT_EQ(expected_total_calls, web_ui()->call_data().size());
 
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
@@ -346,7 +346,8 @@ class SiteSettingsHandlerTest : public testing::Test {
   }
 
   void ValidateZoom(const std::string& expected_host,
-      const std::string& expected_zoom, size_t expected_total_calls) {
+                    const std::string& expected_zoom,
+                    size_t expected_total_calls) {
     EXPECT_EQ(expected_total_calls, web_ui()->call_data().size());
 
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
@@ -1071,8 +1072,8 @@ TEST_F(SiteSettingsHandlerTest, ExceptionHelpers) {
                   .Build();
 
   std::unique_ptr<base::ListValue> exceptions(new base::ListValue);
-  site_settings::AddExceptionForHostedApp(
-      "[*.]google.com", *extension.get(), exceptions.get());
+  site_settings::AddExceptionForHostedApp("[*.]google.com", *extension.get(),
+                                          exceptions.get());
 
   const base::DictionaryValue* dictionary;
   CHECK(exceptions->GetDictionary(0, &dictionary));
