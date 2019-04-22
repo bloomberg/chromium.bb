@@ -236,10 +236,9 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   //
   // If |respect_limits| is DISABLED, priority must be HIGHEST.
   //
-  // |on_proxy_auth_challenge_callback| will be invoked each time an auth
-  // challenge is seen while establishing a tunnel. It will never be invoked
-  // synchronously when RequestSocket is called, and will be invoked once for
-  // each challenge seen.
+  // |proxy_auth_callback| will be invoked each time an auth challenge is seen
+  // while establishing a tunnel. It will be invoked asynchronously, once for
+  // each auth challenge seen.
   virtual int RequestSocket(const GroupId& group_id,
                             scoped_refptr<SocketParams> params,
                             RequestPriority priority,
@@ -247,7 +246,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
                             RespectLimits respect_limits,
                             ClientSocketHandle* handle,
                             CompletionOnceCallback callback,
-                            const ProxyAuthCallback& proxy_auth_challenge,
+                            const ProxyAuthCallback& proxy_auth_callback,
                             const NetLogWithSource& net_log) = 0;
 
   // RequestSockets is used to request that |num_sockets| be connected in the
