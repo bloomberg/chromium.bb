@@ -105,10 +105,9 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
     {CompositingReason::kIsolateCompositedDescendants,
      "isolateCompositedDescendants",
      "Should isolate descendants to apply a blend effect"},
-    {CompositingReason::kPositionFixedOrStickyWithCompositedDescendants,
-     "positionFixedOrStickyWithCompositedDescendants"
-     "Is a position:fixed or position:sticky element with composited "
-     "descendants"},
+    {CompositingReason::kPositionFixedWithCompositedDescendants,
+     "positionFixedWithCompositedDescendants"
+     "Is a position:fixed element with composited descendants"},
     {CompositingReason::kRoot, "root", "Is the root layer"},
     {CompositingReason::kLayerForAncestorClip, "layerForAncestorClip",
      "Secondary layer, applies a clip due to a sibling in the compositing "
