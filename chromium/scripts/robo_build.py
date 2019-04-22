@@ -8,7 +8,6 @@
 
 import os
 from robo_lib import log
-from subprocess import call
 
 def ConfigureAndBuildFFmpeg(robo_configuration, platform, architecture):
   """Run FFmpeg's configure script, and build ffmpeg.
@@ -27,7 +26,7 @@ def ConfigureAndBuildFFmpeg(robo_configuration, platform, architecture):
   command = ["./chromium/scripts/build_ffmpeg.py", platform]
   if architecture:
     command.append(architecture)
-  if call(command):
+  if robo_configuration.Call(command):
       raise Exception("FFmpeg build failed for %s %s" %
               (platform, architecture))
 
@@ -41,13 +40,13 @@ def ImportFFmpegConfigsIntoChromium(robo_configuration, write_git_file = False):
   """
   robo_configuration.chdir_to_ffmpeg_home();
   log("Copying FFmpeg configs")
-  if call(["./chromium/scripts/copy_config.sh"]):
+  if robo_configuration.Call(["./chromium/scripts/copy_config.sh"]):
       raise Exception("FFmpeg copy_config.sh failed")
   log("Generating GN config for all ffmpeg versions")
   generate_cmd = ["./chromium/scripts/generate_gn.py"]
   if write_git_file:
     generate_cmd += ["-i", robo_configuration.autorename_git_file()]
-  if call(generate_cmd):
+  if robo_configuration.Call(generate_cmd):
       raise Exception("FFmpeg generate_gn.sh failed")
 
 def BuildAndImportAllFFmpegConfigs(robo_configuration):
@@ -98,7 +97,7 @@ def BuildChromeTargetASAN(robo_configuration, target, platform, architecture):
     architecture: arch to build it for (e.g., "x64").
   """
   robo_configuration.chdir_to_chrome_src()
-  if call(["ninja", "-j5000", "-C",
+  if robo_configuration.Call(["ninja", "-j5000", "-C",
           robo_configuration.relative_asan_directory(), target]):
       raise Exception("Failed to build %s" % target)
 
@@ -117,7 +116,8 @@ def BuildAndRunChromeTargetASAN(robo_configuration, target, platform,
   # TODO: we should be smarter about running things on android, for example.
   log("Running %s" % target)
   robo_configuration.chdir_to_chrome_src()
-  if call([os.path.join(robo_configuration.absolute_asan_directory(), target)]):
+  if robo_configuration.Call(
+          [os.path.join(robo_configuration.absolute_asan_directory(), target)]):
     raise Exception("%s didn't complete successfully" % target)
   log("%s ran successfully" % target)
 

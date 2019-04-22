@@ -6,12 +6,14 @@
 #
 # Set up everything for the roll.
 #
-# --setup: set up the host to do a roll.  Idempotent, but probably doesn't need
-#          to be run more than once in a while.
-# --test:  configure ffmpeg for the host machine, and try running media unit
-#          tests and the ffmpeg regression tests.
-# --build: build ffmpeg configs for all platforms, then generate gn config.
-# --all:   do everything.  Right now, this is the same as "--test --build".
+# --prompt: require user input before taking any action.  Use in conjunction
+#           with (before) other options.
+# --setup:  set up the host to do a roll.  Idempotent, but probably doesn't need
+#           to be run more than once in a while.
+# --test:   configure ffmpeg for the host machine, and try running media unit
+#           tests and the ffmpeg regression tests.
+# --build:  build ffmpeg configs for all platforms, then generate gn config.
+# --all:    do everything.  Right now, this is the same as "--test --build".
 
 import getopt
 import os
@@ -28,10 +30,12 @@ def main(argv):
   robo_configuration.chdir_to_ffmpeg_home();
 
   parsed, remaining = getopt.getopt(argv, "",
-          ["setup", "test", "build", "auto-merge"])
+          ["prompt", "setup", "test", "build", "auto-merge"])
 
   for opt, arg in parsed:
-    if opt == "--setup":
+    if opt == "--prompt":
+      robo_configuration.set_prompt_on_call(True)
+    elif opt == "--setup":
       robo_setup.InstallPrereqs(robo_configuration)
       robo_setup.EnsureToolchains(robo_configuration)
       robo_setup.EnsureASANDirWorks(robo_configuration)
