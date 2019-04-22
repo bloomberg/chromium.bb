@@ -6134,8 +6134,8 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
                                             base::debug::CrashKeySize::Size256),
         GetSiteInstance()->lock_url().spec());
 
-    if (navigation_request_ && navigation_request_->navigation_handle()) {
-      NavigationHandleImpl* handle = navigation_request_->navigation_handle();
+    if (navigation_request && navigation_request->navigation_handle()) {
+      NavigationHandleImpl* handle = navigation_request->navigation_handle();
       base::debug::SetCrashKeyString(
           base::debug::AllocateCrashKeyString(
               "is_renderer_initiated", base::debug::CrashKeySize::Size32),
@@ -6159,7 +6159,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
       base::debug::SetCrashKeyString(
           base::debug::AllocateCrashKeyString(
               "net_error_code", base::debug::CrashKeySize::Size32),
-          base::NumberToString(navigation_request_->net_error()));
+          base::NumberToString(navigation_request->net_error()));
 
       base::debug::SetCrashKeyString(
           base::debug::AllocateCrashKeyString(
