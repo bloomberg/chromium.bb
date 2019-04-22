@@ -8,13 +8,13 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 
 namespace blink {
 
 class ComputedStyle;
-class FloatRect;
-class LayoutRect;
 struct NGPhysicalBoxStrut;
 
 // NGPhysicalOffsetRect is the position and size of a rect (typically a
@@ -32,7 +32,9 @@ struct CORE_EXPORT NGPhysicalOffsetRect {
   LayoutUnit Right() const { return offset.left + size.width; }
   LayoutUnit Bottom() const { return offset.top + size.height; }
 
-  bool operator==(const NGPhysicalOffsetRect& other) const;
+  bool operator==(const NGPhysicalOffsetRect& other) const {
+    return offset == other.offset && size == other.size;
+  }
 
   bool Contains(const NGPhysicalOffsetRect& other) const;
 
@@ -47,12 +49,15 @@ struct CORE_EXPORT NGPhysicalOffsetRect {
 
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.
-  explicit NGPhysicalOffsetRect(const LayoutRect&);
-  LayoutRect ToLayoutRect() const;
+  explicit NGPhysicalOffsetRect(const LayoutRect& r)
+      : offset(r.X(), r.Y()), size(r.Width(), r.Height()) {}
+  LayoutRect ToLayoutRect() const {
+    return LayoutRect(offset.left, offset.top, size.width, size.height);
+  }
   LayoutRect ToLayoutFlippedRect(const ComputedStyle&,
                                  const NGPhysicalSize&) const;
 
-  FloatRect ToFloatRect() const;
+  FloatRect ToFloatRect() const { return FloatRect(ToLayoutRect()); }
 
   String ToString() const;
 };

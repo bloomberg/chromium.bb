@@ -11,10 +11,6 @@
 
 namespace blink {
 
-bool NGPhysicalOffsetRect::operator==(const NGPhysicalOffsetRect& other) const {
-  return other.offset == offset && other.size == size;
-}
-
 bool NGPhysicalOffsetRect::Contains(const NGPhysicalOffsetRect& other) const {
   return offset.left <= other.offset.left && offset.top <= other.offset.top &&
          Right() >= other.Right() && Bottom() >= other.Bottom();
@@ -84,14 +80,6 @@ void NGPhysicalOffsetRect::ExpandEdgesToPixelBoundaries() {
   size.height = LayoutUnit(max_bottom - top);
 }
 
-NGPhysicalOffsetRect::NGPhysicalOffsetRect(const LayoutRect& source)
-    : NGPhysicalOffsetRect({source.X(), source.Y()},
-                           {source.Width(), source.Height()}) {}
-
-LayoutRect NGPhysicalOffsetRect::ToLayoutRect() const {
-  return {offset.left, offset.top, size.width, size.height};
-}
-
 LayoutRect NGPhysicalOffsetRect::ToLayoutFlippedRect(
     const ComputedStyle& style,
     const NGPhysicalSize& container_size) const {
@@ -99,10 +87,6 @@ LayoutRect NGPhysicalOffsetRect::ToLayoutFlippedRect(
     return {offset.left, offset.top, size.width, size.height};
   return {container_size.width - offset.left - size.width, offset.top,
           size.width, size.height};
-}
-
-FloatRect NGPhysicalOffsetRect::ToFloatRect() const {
-  return {offset.left, offset.top, size.width, size.height};
 }
 
 String NGPhysicalOffsetRect::ToString() const {
