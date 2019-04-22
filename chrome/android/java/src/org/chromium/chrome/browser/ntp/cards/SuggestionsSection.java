@@ -203,7 +203,6 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         mOfflineModelObserver.onDestroy();
         if (mSigninPromo != null) mSigninPromo.destroy();
         mSuggestionsList.destroy();
-        mMoreButton.destroy();
         mIsDestroyed = true;
     }
 
@@ -302,8 +301,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
 
     /** Whether the section is waiting for content to be loaded. */
     public boolean isLoading() {
-        return mMoreButton.getState() == ActionItem.State.INITIAL_LOADING
-                || mMoreButton.getState() == ActionItem.State.MORE_BUTTON_LOADING;
+        return mMoreButton.getState() == ActionItem.State.LOADING;
     }
 
     /**
@@ -463,7 +461,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
             return;
         }
 
-        mMoreButton.updateState(ActionItem.State.MORE_BUTTON_LOADING);
+        mMoreButton.updateState(ActionItem.State.LOADING);
         mSuggestionsSource.fetchSuggestions(mCategoryInfo.getCategory(),
                 getDisplayedSuggestionIds(), suggestions -> { /* successCallback */
                     if (mIsDestroyed) return; // The section has been dismissed.
@@ -493,7 +491,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         boolean isLoading = SnippetsBridge.isCategoryLoading(status);
         mMoreButton.updateState(!shouldShowSuggestions()
                         ? ActionItem.State.HIDDEN
-                        : (isLoading ? ActionItem.State.INITIAL_LOADING : ActionItem.State.BUTTON));
+                        : (isLoading ? ActionItem.State.LOADING : ActionItem.State.BUTTON));
 
         if (mSigninPromo != null) {
             mSigninPromo.setCanShowPersonalizedSuggestions(shouldShowSuggestions());

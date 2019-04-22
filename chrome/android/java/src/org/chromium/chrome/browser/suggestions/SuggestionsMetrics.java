@@ -6,12 +6,10 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.support.v7.widget.RecyclerView;
 
-import com.google.android.libraries.feed.host.logging.SpinnerType;
-
+import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.ntp.cards.ActionItem.State;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.FaviconFetchResult;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
@@ -128,11 +126,14 @@ public abstract class SuggestionsMetrics {
     }
 
     /**
-     * @return A {@link SpinnerDurationTracker} to notify to report how long the spinner is visible
+     * @return A {@link DurationTracker} to notify to report how long the spinner is visible
      * for.
      */
-    public static SpinnerDurationTracker getSpinnerVisibilityReporter() {
-        return new SpinnerDurationTracker();
+    public static DurationTracker getSpinnerVisibilityReporter() {
+        return new DurationTracker((duration) -> {
+            RecordHistogram.recordTimesHistogram(
+                    "ContentSuggestions.Feed.FetchPendingSpinner.VisibleDuration", duration);
+        });
     }
 
     /**
@@ -166,71 +167,31 @@ public abstract class SuggestionsMetrics {
     }
 
     /**
-     * Utility class to track the duration of a spinner. Call {@link #startTracking(state)} when a
-     * Spinner start, call {@link #endCompleteTracking()} when a loading spinner finishes showing,
-     * and call {@link #endIncompleteTracking()} when a spinner is destroyed without completing.
-     * These methods are no-ops when called while tracking is not in the expected state.
+     * Utility class to track the duration of an event. Call {@link #startTracking()} and
+     * {@link #endTracking()} to notify about the key moments. These methods are no-ops when called
+     * while tracking is not in the expected state.
      */
-    public static class SpinnerDurationTracker {
+    public static class DurationTracker {
         private long mTrackingStartTimeMs;
-        private @SpinnerType int mSpinnerType;
+        private final Callback<Long> mTrackingCompleteCallback;
 
-        private SpinnerDurationTracker() {
-            mTrackingStartTimeMs = 0;
+        private DurationTracker(Callback<Long> trackingCompleteCallback) {
+            mTrackingCompleteCallback = trackingCompleteCallback;
         }
 
-        /**
-         * Start tracking of the spinner.
-         * @param state The state of the {@link ActionItem}.
-         */
-        public void startTracking(@State int state) {
-            assert state == State.INITIAL_LOADING || state == State.MORE_BUTTON_LOADING;
-
+        public void startTracking() {
             if (isTracking()) return;
-
-            if (state == State.INITIAL_LOADING) {
-                mSpinnerType = SpinnerType.INITIAL_LOAD;
-            } else if (state == State.MORE_BUTTON_LOADING) {
-                mSpinnerType = SpinnerType.MORE_BUTTON;
-            }
             mTrackingStartTimeMs = System.currentTimeMillis();
-
-            RecordHistogram.recordEnumeratedHistogram(
-                    "ContentSuggestions.Feed.FetchPendingSpinner.Shown", mSpinnerType,
-                    SpinnerType.NEXT_VALUE);
         }
 
-        /**
-         * Stop tracking of the spinner which is destroyed without completing.
-         */
-        public void endCompleteTracking() {
+        public void endTracking() {
             if (!isTracking()) return;
-            recordSpinnerTimeUMA("ContentSuggestions.Feed.FetchPendingSpinner.VisibleDuration");
-        }
-
-        /**
-         * Stop tracking of the spinner which finishes showing.
-         */
-        public void endIncompleteTracking() {
-            if (!isTracking()) return;
-            recordSpinnerTimeUMA(
-                    "ContentSuggestions.Feed.FetchPendingSpinner.VisibleDurationWithoutCompleting");
+            mTrackingCompleteCallback.onResult(System.currentTimeMillis() - mTrackingStartTimeMs);
+            mTrackingStartTimeMs = 0;
         }
 
         private boolean isTracking() {
             return mTrackingStartTimeMs > 0;
-        }
-
-        private void recordSpinnerTimeUMA(String baseName) {
-            long duration = System.currentTimeMillis() - mTrackingStartTimeMs;
-            RecordHistogram.recordTimesHistogram(baseName, duration);
-
-            if (mSpinnerType == SpinnerType.INITIAL_LOAD) {
-                RecordHistogram.recordTimesHistogram(baseName + ".InitialLoad", duration);
-            } else if (mSpinnerType == SpinnerType.MORE_BUTTON) {
-                RecordHistogram.recordTimesHistogram(baseName + ".MoreButton", duration);
-            }
-            mTrackingStartTimeMs = 0;
         }
     }
 }
