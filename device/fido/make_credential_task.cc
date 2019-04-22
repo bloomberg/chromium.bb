@@ -142,7 +142,8 @@ void MakeCredentialTask::MakeCredential() {
         device(), NextSilentSignRequest(),
         base::BindOnce(&MakeCredentialTask::HandleResponseToSilentSignRequest,
                        weak_factory_.GetWeakPtr()),
-        base::BindOnce(&ReadCTAPGetAssertionResponse));
+        base::BindOnce(&ReadCTAPGetAssertionResponse),
+        /*string_fixup_predicate=*/nullptr);
     silent_sign_operation_->Start();
     return;
   }
@@ -151,7 +152,8 @@ void MakeCredentialTask::MakeCredential() {
       CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
       device(), std::move(request_), std::move(callback_),
       base::BindOnce(&ReadCTAPMakeCredentialResponse,
-                     device()->DeviceTransport()));
+                     device()->DeviceTransport()),
+      /*string_fixup_predicate=*/nullptr);
   register_operation_->Start();
 }
 
@@ -175,7 +177,8 @@ void MakeCredentialTask::HandleResponseToSilentSignRequest(
         CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
         device(), std::move(request), std::move(callback_),
         base::BindOnce(&ReadCTAPMakeCredentialResponse,
-                       device()->DeviceTransport()));
+                       device()->DeviceTransport()),
+        /*string_fixup_predicate=*/nullptr);
     register_operation_->Start();
     return;
   }
@@ -192,7 +195,8 @@ void MakeCredentialTask::HandleResponseToSilentSignRequest(
         base::BindOnce(&MakeCredentialTask::HandleResponseToDummyTouch,
                        weak_factory_.GetWeakPtr()),
         base::BindOnce(&ReadCTAPMakeCredentialResponse,
-                       device()->DeviceTransport()));
+                       device()->DeviceTransport()),
+        /*string_fixup_predicate=*/nullptr);
     register_operation_->Start();
     return;
   }
@@ -205,7 +209,8 @@ void MakeCredentialTask::HandleResponseToSilentSignRequest(
         device(), NextSilentSignRequest(),
         base::BindOnce(&MakeCredentialTask::HandleResponseToSilentSignRequest,
                        weak_factory_.GetWeakPtr()),
-        base::BindOnce(&ReadCTAPGetAssertionResponse));
+        base::BindOnce(&ReadCTAPGetAssertionResponse),
+        /*string_fixup_predicate=*/nullptr);
     silent_sign_operation_->Start();
     return;
   }
@@ -219,7 +224,8 @@ void MakeCredentialTask::HandleResponseToSilentSignRequest(
       CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
       device(), std::move(request), std::move(callback_),
       base::BindOnce(&ReadCTAPMakeCredentialResponse,
-                     device()->DeviceTransport()));
+                     device()->DeviceTransport()),
+      /*string_fixup_predicate=*/nullptr);
   register_operation_->Start();
 }
 

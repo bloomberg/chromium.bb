@@ -79,7 +79,8 @@ void FidoDeviceAuthenticator::GetNextAssertion(GetAssertionCallback callback) {
       std::make_unique<Ctap2DeviceOperation<CtapGetNextAssertionRequest,
                                             AuthenticatorGetAssertionResponse>>(
           device_.get(), CtapGetNextAssertionRequest(), std::move(callback),
-          base::BindOnce(&ReadCTAPGetAssertionResponse));
+          base::BindOnce(&ReadCTAPGetAssertionResponse),
+          GetAssertionTask::StringFixupPredicate);
   operation_->Start();
 }
 
@@ -111,7 +112,8 @@ void FidoDeviceAuthenticator::GetRetries(GetRetriesCallback callback) {
   operation_ = std::make_unique<
       Ctap2DeviceOperation<pin::RetriesRequest, pin::RetriesResponse>>(
       device_.get(), pin::RetriesRequest(), std::move(callback),
-      base::BindOnce(&pin::RetriesResponse::Parse));
+      base::BindOnce(&pin::RetriesResponse::Parse),
+      /*string_fixup_predicate=*/nullptr);
   operation_->Start();
 }
 
@@ -127,7 +129,8 @@ void FidoDeviceAuthenticator::GetEphemeralKey(
       std::make_unique<Ctap2DeviceOperation<pin::KeyAgreementRequest,
                                             pin::KeyAgreementResponse>>(
           device_.get(), pin::KeyAgreementRequest(), std::move(callback),
-          base::BindOnce(&pin::KeyAgreementResponse::Parse));
+          base::BindOnce(&pin::KeyAgreementResponse::Parse),
+          /*string_fixup_predicate=*/nullptr);
   operation_->Start();
 }
 
@@ -146,7 +149,8 @@ void FidoDeviceAuthenticator::GetPINToken(
   operation_ = std::make_unique<
       Ctap2DeviceOperation<pin::TokenRequest, pin::TokenResponse>>(
       device_.get(), std::move(request), std::move(callback),
-      base::BindOnce(&pin::TokenResponse::Parse, std::move(shared_key)));
+      base::BindOnce(&pin::TokenResponse::Parse, std::move(shared_key)),
+      /*string_fixup_predicate=*/nullptr);
   operation_->Start();
 }
 
@@ -162,7 +166,8 @@ void FidoDeviceAuthenticator::SetPIN(const std::string& pin,
   operation_ = std::make_unique<
       Ctap2DeviceOperation<pin::SetRequest, pin::EmptyResponse>>(
       device_.get(), pin::SetRequest(pin, peer_key), std::move(callback),
-      base::BindOnce(&pin::EmptyResponse::Parse));
+      base::BindOnce(&pin::EmptyResponse::Parse),
+      /*string_fixup_predicate=*/nullptr);
   operation_->Start();
 }
 
@@ -179,7 +184,8 @@ void FidoDeviceAuthenticator::ChangePIN(const std::string& old_pin,
   operation_ = std::make_unique<
       Ctap2DeviceOperation<pin::ChangeRequest, pin::EmptyResponse>>(
       device_.get(), pin::ChangeRequest(old_pin, new_pin, peer_key),
-      std::move(callback), base::BindOnce(&pin::EmptyResponse::Parse));
+      std::move(callback), base::BindOnce(&pin::EmptyResponse::Parse),
+      /*string_fixup_predicate=*/nullptr);
   operation_->Start();
 }
 
@@ -303,7 +309,8 @@ void FidoDeviceAuthenticator::Reset(ResetCallback callback) {
   operation_ = std::make_unique<
       Ctap2DeviceOperation<pin::ResetRequest, pin::ResetResponse>>(
       device_.get(), pin::ResetRequest(), std::move(callback),
-      base::BindOnce(&pin::ResetResponse::Parse));
+      base::BindOnce(&pin::ResetResponse::Parse),
+      /*string_fixup_predicate=*/nullptr);
   operation_->Start();
 }
 

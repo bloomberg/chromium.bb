@@ -349,9 +349,7 @@ TEST_F(FidoGetAssertionHandlerTest, TruncatedUTF8) {
   // Webauthn says[1] that authenticators may truncate strings in user entities.
   // Since authenticators aren't going to do UTF-8 processing, that means that
   // they may truncate a multi-byte code point and thus produce an invalid
-  // string in the CBOR. This test exercises that and currently fails because
-  // it's not yet handled.
-  // TODO: handle this.
+  // string in the CBOR. This test exercises that case.
   //
   // [1] https://www.w3.org/TR/webauthn/#sctn-user-credential-params
   auto request_handler = CreateGetAssertionHandlerCtap();
@@ -363,19 +361,14 @@ TEST_F(FidoGetAssertionHandlerTest, TruncatedUTF8) {
       test_data::kTestGetAssertionResponseWithTruncatedUTF8);
   discovery()->AddDevice(std::move(device));
 
-  if (true /* TODO: this should be false */) {
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
-    EXPECT_FALSE(get_assertion_callback().was_called());
-  } else {
-    get_assertion_callback().WaitForCallback();
-    const auto& response = get_assertion_callback().value<0>();
-    EXPECT_TRUE(request_handler->is_complete());
-    EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
-    ASSERT_TRUE(response);
-    ASSERT_EQ(1u, response->size());
-    ASSERT_TRUE(response.value()[0].user_entity());
-    EXPECT_EQ(response.value()[0].user_entity()->name, "XX");
-  }
+  get_assertion_callback().WaitForCallback();
+  const auto& response = get_assertion_callback().value<0>();
+  EXPECT_TRUE(request_handler->is_complete());
+  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
+  ASSERT_TRUE(response);
+  ASSERT_EQ(1u, response->size());
+  ASSERT_TRUE(response.value()[0].user_entity());
+  EXPECT_EQ(63u, response.value()[0].user_entity()->name->size());
 }
 
 // Tests a scenario where authenticator responds without user entity in its

@@ -272,6 +272,7 @@ fuzzer_test("ctap_response_fuzzer") {
     "//base",
     "//base:i18n",
     "//components/cbor",
+    "//components/device_event_log",
   ]
   seed_corpus = "response_data_fuzzer_corpus/"
   libfuzzer_options = [ "max_len=65537" ]
