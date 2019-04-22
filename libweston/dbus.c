@@ -398,11 +398,11 @@ void weston_dbus_remove_match_signal(DBusConnection *c, const char *sender,
 				     const char *iface, const char *member,
 				     const char *path)
 {
-	return weston_dbus_remove_match(c,
-					"type='signal',"
-					"sender='%s',"
-					"interface='%s',"
-					"member='%s',"
-					"path='%s'",
-					sender, iface, member, path);
+	weston_dbus_remove_match(c,
+				 "type='signal',"
+				 "sender='%s',"
+				 "interface='%s',"
+				 "member='%s',"
+				 "path='%s'",
+				 sender, iface, member, path);
 }
