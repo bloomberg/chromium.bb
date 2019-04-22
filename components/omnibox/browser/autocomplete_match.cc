@@ -292,6 +292,93 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
 }
 #endif
 
+base::string16 AutocompleteMatch::GetWhyThisSuggestionText() const {
+  // TODO(tommycli): Replace these placeholder strings with final ones from UX.
+  switch (type) {
+    case Type::URL_WHAT_YOU_TYPED:
+      return base::ASCIIToUTF16(
+          "This navigation match is the exact URL you typed.");
+
+    case Type::HISTORY_URL:
+    case Type::HISTORY_TITLE:
+    case Type::HISTORY_BODY:
+    case Type::HISTORY_KEYWORD:
+      return base::ASCIIToUTF16(
+          "This navigation match is a previously visited page from Chrome "
+          "History.");
+
+    case Type::NAVSUGGEST:
+      return base::ASCIIToUTF16(
+          "This navigation match is suggested by the search engine based on "
+          "what you typed.");
+
+    case Type::SEARCH_WHAT_YOU_TYPED:
+      return base::ASCIIToUTF16("This search query is exactly what you typed.");
+
+    case Type::SEARCH_HISTORY:
+      // TODO(tommycli): We may need to distinguish between matches sourced
+      // from search history saved in the cloud vs. locally.
+      return base::ASCIIToUTF16(
+          "This search query is suggested by the search engine based on what "
+          "you typed and past search queries.");
+
+    case Type::SEARCH_SUGGEST:
+    case Type::SEARCH_SUGGEST_ENTITY:
+    case Type::SEARCH_SUGGEST_TAIL:
+      return base::ASCIIToUTF16(
+          "This search query is suggested by the search engine based on what "
+          "you typed.");
+
+    case Type::SEARCH_SUGGEST_PERSONALIZED:
+      return base::ASCIIToUTF16(
+          "This search query is suggested by the search engine based on what "
+          "you typed. It has also been personalized to you.");
+
+    case Type::SEARCH_OTHER_ENGINE:
+      return base::ASCIIToUTF16(
+          "This search query is for a non-default search engine.");
+
+    case Type::BOOKMARK_TITLE:
+      return base::ASCIIToUTF16(
+          "This navigation matches the title of a Bookmark.");
+
+    case Type::NAVSUGGEST_PERSONALIZED:
+      return base::ASCIIToUTF16(
+          "This navigation match is suggested by the search engine based on "
+          "what you typed. It has also been personalized to you.");
+
+    case Type::CALCULATOR:
+      return base::ASCIIToUTF16(
+          "This calculation is the result of evaluating your input provided by "
+          "your default search engine.");
+
+    case Type::CLIPBOARD_URL:
+    case Type::CLIPBOARD_TEXT:
+    case Type::CLIPBOARD_IMAGE:
+      return base::ASCIIToUTF16("This match is from the system clipboard.");
+
+    case Type::VOICE_SUGGEST:
+      return base::ASCIIToUTF16("This match is from voice.");
+
+    case Type::DOCUMENT_SUGGESTION:
+      return base::ASCIIToUTF16("This match is from your documents.");
+
+    case Type::PEDAL:
+      return base::ASCIIToUTF16(
+          "This is a suggested Chrome action based on what you typed.");
+
+    case Type::EXTENSION_APP_DEPRECATED:
+    case Type::SEARCH_SUGGEST_PROFILE:
+    case Type::CONTACT_DEPRECATED:
+    case Type::PHYSICAL_WEB_DEPRECATED:
+    case Type::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
+    case Type::TAB_SEARCH_DEPRECATED:
+    case Type::NUM_TYPES:
+      NOTREACHED();
+      return base::string16();
+  }
+}
+
 // static
 bool AutocompleteMatch::MoreRelevant(const AutocompleteMatch& elem1,
                                      const AutocompleteMatch& elem2) {

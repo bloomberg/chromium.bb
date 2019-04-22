@@ -156,6 +156,10 @@ struct AutocompleteMatch {
   const gfx::VectorIcon& GetVectorIcon(bool is_bookmark) const;
 #endif
 
+  // Returns text explaining why this suggestion was displayed. Can return an
+  // empty string if there is no explanation.
+  base::string16 GetWhyThisSuggestionText() const;
+
   // Comparison function for determining when one match is better than another.
   static bool MoreRelevant(const AutocompleteMatch& elem1,
                            const AutocompleteMatch& elem2);
