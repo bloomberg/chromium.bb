@@ -151,6 +151,10 @@ bool LoadTableCellMethods() {
   return cell_get_type;
 }
 
+bool SupportsAtkComponentScrollingInterface() {
+  return dlsym(RTLD_DEFAULT, "atk_component_scroll_to_point");
+}
+
 AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
   while (atk_object) {
     if (atk_object_get_role(atk_object) == ATK_ROLE_FRAME)
@@ -540,12 +544,82 @@ gboolean GrabFocus(AtkComponent* atk_component) {
   return obj->GrabFocus();
 }
 
+#if ATK_CHECK_VERSION(2, 30, 0)
+gboolean ScrollTo(AtkComponent* component, AtkScrollType scroll_type) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(component));
+  if (!obj)
+    return FALSE;
+
+  switch (scroll_type) {
+    case ATK_SCROLL_TOP_LEFT:
+      obj->ScrollToNode(AXPlatformNodeBase::ScrollType::TopLeft);
+      break;
+    case ATK_SCROLL_BOTTOM_RIGHT:
+      obj->ScrollToNode(AXPlatformNodeBase::ScrollType::BottomRight);
+      break;
+    case ATK_SCROLL_TOP_EDGE:
+      obj->ScrollToNode(AXPlatformNodeBase::ScrollType::TopEdge);
+      break;
+    case ATK_SCROLL_BOTTOM_EDGE:
+      obj->ScrollToNode(AXPlatformNodeBase::ScrollType::BottomEdge);
+      break;
+    case ATK_SCROLL_LEFT_EDGE:
+      obj->ScrollToNode(AXPlatformNodeBase::ScrollType::LeftEdge);
+      break;
+    case ATK_SCROLL_RIGHT_EDGE:
+      obj->ScrollToNode(AXPlatformNodeBase::ScrollType::RightEdge);
+      break;
+    case ATK_SCROLL_ANYWHERE:
+      obj->ScrollToNode(AXPlatformNodeBase::ScrollType::Anywhere);
+  }
+
+  return TRUE;
+}
+
+gboolean ScrollToPoint(AtkComponent* component,
+                       AtkCoordType atk_coord_type,
+                       gint x,
+                       gint y) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(component));
+  if (!obj)
+    return FALSE;
+
+  gfx::Point scroll_to(x, y);
+  switch (atk_coord_type) {
+    case ATK_XY_SCREEN:
+      break;
+    case ATK_XY_WINDOW:
+      scroll_to += obj->GetParentFrameOriginInScreenCoordinates();
+      break;
+    case ATK_XY_PARENT:
+      scroll_to += obj->GetParentOriginInScreenCoordinates();
+      break;
+  }
+
+  ui::AXActionData action_data;
+  action_data.target_node_id = obj->GetData().id;
+  action_data.action = ax::mojom::Action::kScrollToPoint;
+  action_data.target_point = scroll_to;
+  obj->GetDelegate()->AccessibilityPerformAction(action_data);
+
+  return TRUE;
+}
+#endif
+
 void Init(AtkComponentIface* iface) {
   iface->get_extents = GetExtents;
   iface->get_position = GetPosition;
   iface->get_size = GetSize;
   iface->ref_accessible_at_point = RefAccesibleAtPoint;
   iface->grab_focus = GrabFocus;
+#if ATK_CHECK_VERSION(2, 30, 0)
+  if (SupportsAtkComponentScrollingInterface()) {
+    iface->scroll_to = ScrollTo;
+    iface->scroll_to_point = ScrollToPoint;
+  }
+#endif
 }
 
 const GInterfaceInfo Info = {reinterpret_cast<GInterfaceInitFunc>(Init),
@@ -3329,11 +3403,52 @@ int AXPlatformNodeAuraLinux::GetIndexInParent() {
   return delegate_->GetIndexInParent();
 }
 
-void AXPlatformNodeAuraLinux::SetExtentsRelativeToAtkCoordinateType(
-    gint* x, gint* y, gint* width, gint* height, AtkCoordType coord_type) {
+gfx::Vector2d AXPlatformNodeAuraLinux::GetParentOriginInScreenCoordinates()
+    const {
+  AtkObject* parent = GetParent();
+  if (!parent)
+    return gfx::Vector2d();
+
+  const AXPlatformNode* parent_node =
+      AXPlatformNode::FromNativeViewAccessible(parent);
+  return parent_node->GetDelegate()
+      ->GetBoundsRect(AXCoordinateSystem::kScreen,
+                      AXClippingBehavior::kUnclipped)
+      .OffsetFromOrigin();
+}
+
+gfx::Vector2d AXPlatformNodeAuraLinux::GetParentFrameOriginInScreenCoordinates()
+    const {
+  AtkObject* frame = FindAtkObjectParentFrame(atk_object_);
+  if (!frame)
+    return gfx::Vector2d();
+
+  const AXPlatformNode* frame_node =
+      AXPlatformNode::FromNativeViewAccessible(frame);
+  return frame_node->GetDelegate()
+      ->GetBoundsRect(AXCoordinateSystem::kScreen,
+                      AXClippingBehavior::kUnclipped)
+      .OffsetFromOrigin();
+}
+
+gfx::Rect AXPlatformNodeAuraLinux::GetExtentsRelativeToAtkCoordinateType(
+    AtkCoordType coord_type) const {
   gfx::Rect extents = delegate_->GetBoundsRect(AXCoordinateSystem::kScreen,
                                                AXClippingBehavior::kUnclipped);
+  if (coord_type == ATK_XY_WINDOW) {
+    gfx::Vector2d frame_origin = -GetParentOriginInScreenCoordinates();
+    extents.Offset(frame_origin);
+  }
 
+  return extents;
+}
+
+void AXPlatformNodeAuraLinux::GetExtents(gint* x,
+                                         gint* y,
+                                         gint* width,
+                                         gint* height,
+                                         AtkCoordType coord_type) {
+  gfx::Rect extents = GetExtentsRelativeToAtkCoordinateType(coord_type);
   if (x)
     *x = extents.x();
   if (y)
@@ -3342,31 +3457,15 @@ void AXPlatformNodeAuraLinux::SetExtentsRelativeToAtkCoordinateType(
     *width = extents.width();
   if (height)
     *height = extents.height();
-
-  if (coord_type == ATK_XY_WINDOW) {
-    if (AtkObject* atk_object = GetParent()) {
-      gfx::Point window_coords = FindAtkObjectParentCoords(atk_object);
-      if (x)
-        *x -= window_coords.x();
-      if (y)
-        *y -= window_coords.y();
-    }
-  }
-}
-
-void AXPlatformNodeAuraLinux::GetExtents(gint* x, gint* y,
-                                         gint* width, gint* height,
-                                         AtkCoordType coord_type) {
-  SetExtentsRelativeToAtkCoordinateType(x, y,
-                                        width, height,
-                                        coord_type);
 }
 
 void AXPlatformNodeAuraLinux::GetPosition(gint* x, gint* y,
                                           AtkCoordType coord_type) {
-  SetExtentsRelativeToAtkCoordinateType(x, y,
-                                        nullptr, nullptr,
-                                        coord_type);
+  gfx::Rect extents = GetExtentsRelativeToAtkCoordinateType(coord_type);
+  if (x)
+    *x = extents.x();
+  if (y)
+    *y = extents.y();
 }
 
 void AXPlatformNodeAuraLinux::GetSize(gint* width, gint* height) {

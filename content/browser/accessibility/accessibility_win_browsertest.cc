@@ -346,20 +346,7 @@ void AccessibilityWinBrowserTest::SetUpSampleParagraph(
 void AccessibilityWinBrowserTest::SetUpSampleParagraphInScrollableDocument(
     Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text,
     ui::AXMode accessibility_mode) {
-  LoadInitialAccessibilityTreeFromHtml(
-      R"HTML(<!DOCTYPE html>
-      <html>
-      <body>
-        <p style="margin-top:50vh; margin-bottom:200vh">
-            <b>Game theory</b> is "the study of
-            <a href="" title="Mathematical model">mathematical models</a>
-            of conflict and<br>cooperation between intelligent rational
-            decision-makers."
-        </p>
-      </body>
-      </html>)HTML",
-      accessibility_mode);
-
+  LoadSampleParagraphInScrollableDocument(accessibility_mode);
   SetUpSampleParagraphHelper(accessible_text);
 }
 

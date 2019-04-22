@@ -1183,6 +1183,42 @@ int32_t AXPlatformNodeBase::GetSetSize() const {
   return delegate_->GetSetSize();
 }
 
+bool AXPlatformNodeBase::ScrollToNode(ScrollType scroll_type) {
+  // ax::mojom::Action::kScrollToMakeVisible wants a target rect in *local*
+  // coords.
+  gfx::Rect r = gfx::ToEnclosingRect(GetData().relative_bounds.bounds);
+  r -= r.OffsetFromOrigin();
+  switch (scroll_type) {
+    case ScrollType::TopLeft:
+      r = gfx::Rect(r.x(), r.y(), 0, 0);
+      break;
+    case ScrollType::BottomRight:
+      r = gfx::Rect(r.right(), r.bottom(), 0, 0);
+      break;
+    case ScrollType::TopEdge:
+      r = gfx::Rect(r.x(), r.y(), r.width(), 0);
+      break;
+    case ScrollType::BottomEdge:
+      r = gfx::Rect(r.x(), r.bottom(), r.width(), 0);
+      break;
+    case ScrollType::LeftEdge:
+      r = gfx::Rect(r.x(), r.y(), 0, r.height());
+      break;
+    case ScrollType::RightEdge:
+      r = gfx::Rect(r.right(), r.y(), 0, r.height());
+      break;
+    case ScrollType::Anywhere:
+      break;
+  }
+
+  ui::AXActionData action_data;
+  action_data.target_node_id = GetData().id;
+  action_data.action = ax::mojom::Action::kScrollToMakeVisible;
+  action_data.target_rect = r;
+  GetDelegate()->AccessibilityPerformAction(action_data);
+  return true;
+}
+
 // static
 void AXPlatformNodeBase::SanitizeStringAttribute(const std::string& input,
                                                  std::string* output) {

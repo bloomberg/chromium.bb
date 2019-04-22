@@ -241,6 +241,17 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
                                ax::mojom::TextAffinity affinity =
                                    ax::mojom::TextAffinity::kDownstream) const;
 
+  enum ScrollType {
+    TopLeft,
+    BottomRight,
+    TopEdge,
+    BottomEdge,
+    LeftEdge,
+    RightEdge,
+    Anywhere,
+  };
+  bool ScrollToNode(ScrollType scroll_type);
+
   //
   // Delegate.  This is a weak reference which owns |this|.
   //

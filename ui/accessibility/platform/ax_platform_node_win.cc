@@ -1398,42 +1398,33 @@ IFACEMETHODIMP AXPlatformNodeWin::get_extendedRole(BSTR* extended_role) {
   return E_NOTIMPL;
 }
 
-IFACEMETHODIMP AXPlatformNodeWin::scrollTo(enum IA2ScrollType scroll_type) {
+IFACEMETHODIMP AXPlatformNodeWin::scrollTo(enum IA2ScrollType ia2_scroll_type) {
   COM_OBJECT_VALIDATE();
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_IA2_SCROLL_TO);
 
-  // ax::mojom::Action::kScrollToMakeVisible wants a target rect in *local*
-  // coords.
-  gfx::Rect r = gfx::ToEnclosingRect(GetData().relative_bounds.bounds);
-  r -= r.OffsetFromOrigin();
-  switch (scroll_type) {
+  switch (ia2_scroll_type) {
     case IA2_SCROLL_TYPE_TOP_LEFT:
-      r = gfx::Rect(r.x(), r.y(), 0, 0);
+      ScrollToNode(ScrollType::TopLeft);
       break;
     case IA2_SCROLL_TYPE_BOTTOM_RIGHT:
-      r = gfx::Rect(r.right(), r.bottom(), 0, 0);
+      ScrollToNode(ScrollType::BottomRight);
       break;
     case IA2_SCROLL_TYPE_TOP_EDGE:
-      r = gfx::Rect(r.x(), r.y(), r.width(), 0);
+      ScrollToNode(ScrollType::TopEdge);
       break;
     case IA2_SCROLL_TYPE_BOTTOM_EDGE:
-      r = gfx::Rect(r.x(), r.bottom(), r.width(), 0);
+      ScrollToNode(ScrollType::BottomEdge);
       break;
     case IA2_SCROLL_TYPE_LEFT_EDGE:
-      r = gfx::Rect(r.x(), r.y(), 0, r.height());
+      ScrollToNode(ScrollType::LeftEdge);
       break;
     case IA2_SCROLL_TYPE_RIGHT_EDGE:
-      r = gfx::Rect(r.right(), r.y(), 0, r.height());
+      ScrollToNode(ScrollType::RightEdge);
       break;
     case IA2_SCROLL_TYPE_ANYWHERE:
+      ScrollToNode(ScrollType::Anywhere);
       break;
   }
-
-  ui::AXActionData action_data;
-  action_data.target_node_id = GetData().id;
-  action_data.action = ax::mojom::Action::kScrollToMakeVisible;
-  action_data.target_rect = r;
-  GetDelegate()->AccessibilityPerformAction(action_data);
   return S_OK;
 }
 

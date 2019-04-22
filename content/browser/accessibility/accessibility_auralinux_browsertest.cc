@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <atk/atk.h>
+#include <dlfcn.h>
 
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -17,6 +18,19 @@
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
 namespace content {
+
+namespace {
+
+AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
+  while (atk_object) {
+    if (atk_object_get_role(atk_object) == ATK_ROLE_FRAME)
+      return atk_object;
+    atk_object = atk_object_get_parent(atk_object);
+  }
+  return nullptr;
+}
+
+}  // namespace
 
 class AccessibilityAuraLinuxBrowserTest : public AccessibilityBrowserTest {
  public:
@@ -43,8 +57,9 @@ class AccessibilityAuraLinuxBrowserTest : public AccessibilityBrowserTest {
   AtkText* SetUpInputField();
   AtkText* SetUpTextareaField();
   AtkText* SetUpSampleParagraph();
-  AtkText* SetUpSampleParagraphInScrollableEditable();
+  AtkText* SetUpSampleParagraphInScrollableDocument();
 
+  AtkText* GetSampleParagraph();
   AtkText* GetAtkTextForChild(AtkRole expected_role);
 
  private:
@@ -104,10 +119,7 @@ AtkText* AccessibilityAuraLinuxBrowserTest::SetUpSampleParagraph() {
   return ATK_TEXT(input);
 }
 
-AtkText*
-AccessibilityAuraLinuxBrowserTest::SetUpSampleParagraphInScrollableEditable() {
-  LoadSampleParagraphInScrollableEditable();
-
+AtkText* AccessibilityAuraLinuxBrowserTest::GetSampleParagraph() {
   AtkObject* document = GetRendererAccessible();
   EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
 
@@ -392,8 +404,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
                        TestCharacterExtentsInScrollableEditable) {
+  LoadSampleParagraphInScrollableEditable();
+
   // By construction, only the first line of the content editable is visible.
-  AtkText* atk_text = SetUpSampleParagraphInScrollableEditable();
+  AtkText* atk_text = GetSampleParagraph();
 
   constexpr int first_line_end = 5;
   constexpr int last_line_start = 8;
@@ -466,5 +480,153 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
     }
   }
 }
+
+#if defined(ATK_230)
+typedef bool (*ScrollToPointFunc)(AtkComponent* component,
+                                  AtkCoordType coords,
+                                  gint x,
+                                  gint y);
+typedef bool (*ScrollToFunc)(AtkComponent* component, AtkScrollType type);
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollToPoint) {
+  // There's a chance we may be compiled with a newer version of ATK and then
+  // run with an older one, so we need to do a runtime check for this method
+  // that is available in ATK 2.30 instead of linking directly.
+  ScrollToPointFunc scroll_to_point = reinterpret_cast<ScrollToPointFunc>(
+      dlsym(RTLD_DEFAULT, "atk_component_scroll_to_point"));
+  if (!scroll_to_point) {
+    LOG(WARNING)
+        << "Skipping AccessibilityAuraLinuxBrowserTest::TestScrollToPoint"
+           " because ATK version < 2.30 detected.";
+    return;
+  }
+
+  LoadSampleParagraphInScrollableDocument();
+  AtkText* atk_text = GetSampleParagraph();
+  ASSERT_TRUE(ATK_IS_COMPONENT(atk_text));
+  AtkComponent* atk_component = ATK_COMPONENT(atk_text);
+
+  int prev_x, prev_y, x, y;
+  atk_component_get_extents(atk_component, &prev_x, &prev_y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+
+  AccessibilityNotificationWaiter location_changed_waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kLocationChanged);
+  scroll_to_point(atk_component, ATK_XY_PARENT, 0, 0);
+  location_changed_waiter.WaitForNotification();
+
+  atk_component_get_extents(atk_component, &x, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_EQ(prev_x, x);
+  EXPECT_GT(prev_y, y);
+
+  constexpr int kScrollToY = 0;
+  scroll_to_point(atk_component, ATK_XY_SCREEN, 0, kScrollToY);
+  location_changed_waiter.WaitForNotification();
+  atk_component_get_extents(atk_component, &x, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_EQ(kScrollToY, y);
+
+  constexpr int kScrollToY_2 = 243;
+  scroll_to_point(atk_component, ATK_XY_SCREEN, 0, kScrollToY_2);
+  location_changed_waiter.WaitForNotification();
+  atk_component_get_extents(atk_component, nullptr, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_EQ(kScrollToY_2, y);
+
+  scroll_to_point(atk_component, ATK_XY_SCREEN, 0, 129);
+  location_changed_waiter.WaitForNotification();
+  atk_component_get_extents(atk_component, nullptr, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+
+  AtkObject* frame = FindAtkObjectParentFrame(ATK_OBJECT(atk_component));
+  int frame_y;
+  atk_component_get_extents(ATK_COMPONENT(frame), nullptr, &frame_y, nullptr,
+                            nullptr, ATK_XY_SCREEN);
+  EXPECT_EQ(frame_y, y);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollTo) {
+  // There's a chance we may be compiled with a newer version of ATK and then
+  // run with an older one, so we need to do a runtime check for this method
+  // that is available in ATK 2.30 instead of linking directly.
+  ScrollToFunc scroll_to = reinterpret_cast<ScrollToFunc>(
+      dlsym(RTLD_DEFAULT, "atk_component_scroll_to"));
+  if (!scroll_to) {
+    LOG(WARNING) << "Skipping AccessibilityAuraLinuxBrowserTest::TestScrollTo"
+                    " because ATK version < 2.30 detected.";
+    return;
+  }
+
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+        <div style="height: 5000px;"></div>
+        <img src="" alt="Target1">
+        <div style="height: 5000px;"></div>
+        <img src="" alt="Target2">
+        <div style="height: 5000px;"></div>
+      </body>
+      </html>)HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  ASSERT_TRUE(ATK_IS_COMPONENT(document));
+
+  // Get the dimensions of the document.
+  int doc_x, doc_y, doc_width, doc_height;
+  atk_component_get_extents(ATK_COMPONENT(document), &doc_x, &doc_y, &doc_width,
+                            &doc_height, ATK_XY_SCREEN);
+
+  // The document should only have two children, both with a role of GRAPHIC.
+  ASSERT_EQ(2, atk_object_get_n_accessible_children(document));
+
+  AtkObject* target = atk_object_ref_accessible_child(document, 0);
+  AtkObject* target2 = atk_object_ref_accessible_child(document, 1);
+
+  ASSERT_TRUE(ATK_IS_COMPONENT(target));
+  ASSERT_TRUE(ATK_IS_COMPONENT(target2));
+
+  ASSERT_EQ(ATK_ROLE_IMAGE, atk_object_get_role(target));
+  ASSERT_EQ(ATK_ROLE_IMAGE, atk_object_get_role(target2));
+
+  // Call atk_component_scroll_to on the first target. Ensure it ends up very
+  // near the center of the window.
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kScrollPositionChanged);
+  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target), ATK_SCROLL_ANYWHERE));
+  waiter.WaitForNotification();
+
+  // Don't assume anything about the font size or the exact centering
+  // behavior, just assert that the object is (roughly) centered by
+  // checking that its top coordinate is between 40% and 60% of the
+  // document's height.
+  int x, y, width, height;
+  atk_component_get_extents(ATK_COMPONENT(target), &x, &y, &width, &height,
+                            ATK_XY_SCREEN);
+  EXPECT_GT(y + height / 2, doc_y + 0.4 * doc_height);
+  EXPECT_LT(y + height / 2, doc_y + 0.6 * doc_height);
+
+  // Now call atk_component_scroll_to on the second target. Ensure it ends up
+  // very near the center of the window.
+  AccessibilityNotificationWaiter waiter2(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kScrollPositionChanged);
+  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target2), ATK_SCROLL_ANYWHERE));
+  waiter2.WaitForNotification();
+
+  // Same as above, make sure it's roughly centered.
+  atk_component_get_extents(ATK_COMPONENT(target2), &x, &y, &width, &height,
+                            ATK_XY_SCREEN);
+  EXPECT_GT(y + height / 2, doc_y + 0.4 * doc_height);
+  EXPECT_LT(y + height / 2, doc_y + 0.6 * doc_height);
+
+  g_object_unref(target);
+  g_object_unref(target2);
+}
+#endif  //  defined(ATK_230)
 
 }  // namespace content

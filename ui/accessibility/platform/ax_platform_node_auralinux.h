@@ -63,9 +63,10 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   const gchar* GetDefaultActionName();
   AtkAttributeSet* GetAtkAttributes();
 
-  void SetExtentsRelativeToAtkCoordinateType(
-      gint* x, gint* y, gint* width, gint* height,
-      AtkCoordType coord_type);
+  gfx::Vector2d GetParentOriginInScreenCoordinates() const;
+  gfx::Vector2d GetParentFrameOriginInScreenCoordinates() const;
+  gfx::Rect GetExtentsRelativeToAtkCoordinateType(
+      AtkCoordType coord_type) const;
 
   // AtkDocument helpers
   const gchar* GetDocumentAttributeValue(const gchar* attribute) const;

@@ -30,6 +30,8 @@ class AccessibilityBrowserTest : public ContentBrowserTest {
   void LoadTextareaField();
   void LoadSampleParagraph(ui::AXMode accessibility_mode = ui::kAXModeComplete);
   void LoadSampleParagraphInScrollableEditable();
+  void LoadSampleParagraphInScrollableDocument(
+      ui::AXMode accessibility_mode = ui::kAXModeComplete);
 
   static std::string InputContentsString();
   static std::string TextAreaContentsString();
