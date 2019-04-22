@@ -28,6 +28,9 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   // matches, the first matching instance created is returned.
   static SystemWebDialogDelegate* FindInstance(const std::string& id);
 
+  // Returns true if there is a system dialog with |url| loaded.
+  static bool HasInstance(const GURL& url);
+
   // |gurl| is the HTML file path for the dialog content and must be set.
   // |title| may be empty in which case ShouldShowDialogTitle() returns false.
   SystemWebDialogDelegate(const GURL& gurl, const base::string16& title);

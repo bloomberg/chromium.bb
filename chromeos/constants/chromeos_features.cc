@@ -120,6 +120,10 @@ const base::Feature kUserActivityPredictionMlService{
 const base::Feature kVideoPlayerNativeControls{
     "VideoPlayerNativeControls", base::FEATURE_ENABLED_BY_DEFAULT};
 
+bool IsSplitSettingsEnabled() {
+  return base::FeatureList::IsEnabled(kSplitSettings);
+}
+
 }  // namespace features
 
 }  // namespace chromeos

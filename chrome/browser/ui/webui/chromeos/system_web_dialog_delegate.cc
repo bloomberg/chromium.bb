@@ -37,6 +37,15 @@ SystemWebDialogDelegate* SystemWebDialogDelegate::FindInstance(
   return iter == instances->end() ? nullptr : *iter;
 }
 
+// static
+bool SystemWebDialogDelegate::HasInstance(const GURL& url) {
+  auto* instances = GetInstances();
+  auto it = std::find_if(
+      instances->begin(), instances->end(),
+      [url](SystemWebDialogDelegate* dialog) { return dialog->gurl_ == url; });
+  return it != instances->end();
+}
+
 SystemWebDialogDelegate::SystemWebDialogDelegate(const GURL& gurl,
                                                  const base::string16& title)
     : gurl_(gurl), title_(title), modal_type_(ui::MODAL_TYPE_NONE) {

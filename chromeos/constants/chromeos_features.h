@@ -62,6 +62,8 @@ extern const base::Feature kVideoPlayerNativeControls;
 
 // Keep alphabetized.
 
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSplitSettingsEnabled();
+
 }  // namespace features
 
 }  // namespace chromeos
