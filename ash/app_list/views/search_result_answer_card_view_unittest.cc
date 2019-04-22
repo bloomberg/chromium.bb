@@ -101,7 +101,8 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) {
-    result_container_view_->child_at(0)->GetAccessibleNodeData(node_data);
+    result_container_view_->children().front()->GetAccessibleNodeData(
+        node_data);
   }
 
   AppListTestViewDelegate& view_delegate() { return view_delegate_; }

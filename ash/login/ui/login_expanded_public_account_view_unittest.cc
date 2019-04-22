@@ -229,7 +229,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
   EXPECT_EQ(test_api.selected_language_item().value, kEnglishLanguageCode);
   LoginMenuView::TestApi language_test_api(test_api.language_menu_view());
   EXPECT_EQ(2u, language_test_api.contents()->children().size());
-  EXPECT_TRUE(language_test_api.contents()->child_at(0)->HasFocus());
+  EXPECT_TRUE(language_test_api.contents()->children()[0]->HasFocus());
 
   // Select language item should close the language menu.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
@@ -243,7 +243,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem2);
   LoginMenuView::TestApi keyboard_test_api(test_api.keyboard_menu_view());
   EXPECT_EQ(2u, keyboard_test_api.contents()->children().size());
-  EXPECT_TRUE(keyboard_test_api.contents()->child_at(1)->HasFocus());
+  EXPECT_TRUE(keyboard_test_api.contents()->children()[1]->HasFocus());
 
   // Select keyboard item should close the keyboard menu.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
@@ -273,7 +273,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
 
   EXPECT_EQ(test_api.selected_language_item().value, kEnglishLanguageCode);
   LoginMenuView::TestApi language_test_api(test_api.language_menu_view());
-  TapOnView(language_test_api.contents()->child_at(1));
+  TapOnView(language_test_api.contents()->children()[1]);
   EXPECT_FALSE(test_api.language_menu_view()->visible());
   EXPECT_EQ(test_api.selected_language_item().value, kFrenchLanguageCode);
   base::RunLoop().RunUntilIdle();
@@ -288,7 +288,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
   // 2. Selected keyboard item will change.
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem2);
   LoginMenuView::TestApi keyboard_test_api(test_api.keyboard_menu_view());
-  TapOnView(keyboard_test_api.contents()->child_at(0));
+  TapOnView(keyboard_test_api.contents()->children()[0]);
   EXPECT_FALSE(test_api.keyboard_menu_view()->visible());
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem1);
 }

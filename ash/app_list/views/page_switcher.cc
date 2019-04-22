@@ -177,8 +177,8 @@ class PageSwitcherButton : public views::Button {
 };
 
 // Gets PageSwitcherButton at |index| in |buttons|.
-PageSwitcherButton* GetButtonByIndex(views::View* buttons, int index) {
-  return static_cast<PageSwitcherButton*>(buttons->child_at(index));
+PageSwitcherButton* GetButtonByIndex(views::View* buttons, size_t index) {
+  return static_cast<PageSwitcherButton*>(buttons->children()[index]);
 }
 
 }  // namespace
@@ -266,9 +266,9 @@ void PageSwitcher::TotalPagesChanged() {
 
 void PageSwitcher::SelectedPageChanged(int old_selected, int new_selected) {
   if (old_selected >= 0 && size_t{old_selected} < buttons_->children().size())
-    GetButtonByIndex(buttons_, old_selected)->SetSelected(false);
+    GetButtonByIndex(buttons_, size_t{old_selected})->SetSelected(false);
   if (new_selected >= 0 && size_t{new_selected} < buttons_->children().size())
-    GetButtonByIndex(buttons_, new_selected)->SetSelected(true);
+    GetButtonByIndex(buttons_, size_t{new_selected})->SetSelected(true);
 }
 
 void PageSwitcher::TransitionStarted() {}

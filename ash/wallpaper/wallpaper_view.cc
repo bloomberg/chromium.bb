@@ -62,7 +62,7 @@ class LayerControlView : public views::View {
         Shell::Get()->display_manager()->GetDisplayInfo(display.id());
 
     DCHECK_EQ(1u, children().size());
-    views::View* child = child_at(0);
+    views::View* child = children().front();
     child->SetBounds(0, 0, display.size().width(), display.size().height());
     gfx::Transform transform;
     // Apply RTL transform explicitly becacuse Views layer code

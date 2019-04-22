@@ -161,7 +161,7 @@ const char* TriView::GetClassName() const {
 }
 
 views::View* TriView::GetContainer(Container container) {
-  return child_at(static_cast<int>(container));
+  return children()[static_cast<size_t>(container)];
 }
 
 SizeRangeLayout* TriView::GetLayoutManager(Container container) {

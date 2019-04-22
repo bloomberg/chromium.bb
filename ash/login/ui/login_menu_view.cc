@@ -167,9 +167,9 @@ LoginMenuView::LoginMenuView(const std::vector<Item>& items,
 
 LoginMenuView::~LoginMenuView() = default;
 
-void LoginMenuView::OnHighlightChange(int item_index, bool by_selection) {
+void LoginMenuView::OnHighlightChange(size_t item_index, bool by_selection) {
   selected_index_ = item_index;
-  views::View* highlight_item = contents_->child_at(item_index);
+  views::View* highlight_item = contents_->children()[item_index];
   for (views::View* child : contents_->GetChildrenInZOrder()) {
     child->SetBackground(views::CreateSolidBackground(
         child == highlight_item ? SK_ColorGRAY : SK_ColorTRANSPARENT));
@@ -189,7 +189,7 @@ LoginButton* LoginMenuView::GetBubbleOpener() const {
 
 void LoginMenuView::OnFocus() {
   // Forward the focus to the selected child view.
-  contents_->child_at(selected_index_)->RequestFocus();
+  contents_->children()[selected_index_]->RequestFocus();
 }
 
 bool LoginMenuView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -204,7 +204,7 @@ bool LoginMenuView::OnKeyPressed(const ui::KeyEvent& event) {
 
 void LoginMenuView::VisibilityChanged(View* starting_from, bool is_visible) {
   if (is_visible)
-    contents_->child_at(selected_index_)->RequestFocus();
+    contents_->children()[selected_index_]->RequestFocus();
 }
 
 views::View* LoginMenuView::FindNextItem(bool reverse) {

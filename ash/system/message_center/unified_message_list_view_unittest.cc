@@ -126,13 +126,13 @@ class UnifiedMessageListViewTest : public AshTestBase,
 
   void DestroyMessageListView() { message_list_view_.reset(); }
 
-  TestNotificationView* GetMessageViewAt(int index) const {
+  TestNotificationView* GetMessageViewAt(size_t index) const {
     return static_cast<TestNotificationView*>(
-        message_list_view()->child_at(index)->child_at(1));
+        message_list_view()->children()[index]->children()[1]);
   }
 
-  gfx::Rect GetMessageViewBounds(int index) const {
-    return message_list_view()->child_at(index)->bounds();
+  gfx::Rect GetMessageViewBounds(size_t index) const {
+    return message_list_view()->children()[index]->bounds();
   }
 
   void AnimateToMiddle() {

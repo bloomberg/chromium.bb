@@ -933,9 +933,9 @@ void LockContentsView::OnSystemInfoChanged(
   if (show)
     system_info_->SetVisible(true);
 
-  auto update_label = [&](int index, const std::string& text) {
+  auto update_label = [&](size_t index, const std::string& text) {
     views::Label* label =
-        static_cast<views::Label*>(system_info_->child_at(index));
+        static_cast<views::Label*>(system_info_->children()[index]);
     label->SetText(base::UTF8ToUTF16(text));
     label->SetVisible(!text.empty());
   };

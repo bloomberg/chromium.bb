@@ -301,8 +301,8 @@ class WallpaperControllerTest : public AshTestBase {
             ->wallpaper_widget_controller();
     EXPECT_TRUE(controller);
     EXPECT_TRUE(controller->GetAnimatingWidget());
-    return static_cast<WallpaperView*>(
-        controller->GetAnimatingWidget()->GetContentsView()->child_at(0));
+    views::View* contents = controller->GetAnimatingWidget()->GetContentsView();
+    return static_cast<WallpaperView*>(contents->children().front());
   }
 
  protected:

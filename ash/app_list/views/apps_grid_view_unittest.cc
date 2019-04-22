@@ -418,7 +418,7 @@ TEST_F(AppsGridViewTest, UMATestForLaunchingApps) {
       1 /* Times kAppListItem launched */);
 
   // Launch a suggested app.
-  suggestions_container_->child_at(0)->OnKeyPressed(
+  suggestions_container_->children().front()->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE));
 
   // Test that histogram recorded app launched from suggestion chip.

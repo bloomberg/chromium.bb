@@ -126,8 +126,8 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
       GetMessageListView()->animation_->End();
   }
 
-  gfx::Rect GetMessageViewVisibleBounds(int index) {
-    gfx::Rect bounds = GetMessageListView()->child_at(index)->bounds();
+  gfx::Rect GetMessageViewVisibleBounds(size_t index) {
+    gfx::Rect bounds = GetMessageListView()->children()[index]->bounds();
     bounds -= GetScroller()->GetVisibleRect().OffsetFromOrigin();
     bounds += GetScroller()->bounds().OffsetFromOrigin();
     return bounds;
@@ -159,7 +159,7 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
     return message_center_view()->stacking_counter_->clear_all_button_;
   }
 
-  message_center::MessageView* ToggleFocusToMessageView(int index,
+  message_center::MessageView* ToggleFocusToMessageView(size_t index,
                                                         bool reverse) {
     auto* focus_manager = message_center_view()->GetFocusManager();
     if (!focus_manager)
@@ -172,7 +172,7 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
       focus_manager->AdvanceFocus(reverse);
       auto* focused_view = focus_manager->GetFocusedView();
       // The MessageView is wrapped in container view in the MessageList.
-      if (focused_view->parent() == GetMessageListView()->child_at(index)) {
+      if (focused_view->parent() == GetMessageListView()->children()[index]) {
         focused_message_view =
             static_cast<message_center::MessageView*>(focused_view);
         break;

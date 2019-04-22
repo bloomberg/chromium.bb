@@ -51,7 +51,7 @@ class ASH_EXPORT LoginMenuView : public LoginBaseBubbleView {
                 const OnSelect& on_select);
   ~LoginMenuView() override;
 
-  void OnHighlightChange(int item_index, bool by_selection);
+  void OnHighlightChange(size_t item_index, bool by_selection);
 
   // LoginBaseBubbleView:
   LoginButton* GetBubbleOpener() const override;
@@ -73,7 +73,7 @@ class ASH_EXPORT LoginMenuView : public LoginBaseBubbleView {
   LoginButton* opener_ = nullptr;
 
   const OnSelect on_select_;
-  int selected_index_ = 0;
+  size_t selected_index_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(LoginMenuView);
 };

@@ -142,7 +142,7 @@ class ScrollContentsView : public views::View {
                                     }),
                      headers_.end());
     } else if (details.is_add && details.parent == this &&
-               details.child == child_at(0)) {
+               details.child == children().front()) {
       // We always want padding on the bottom of the scroll contents.
       // We only want padding on the top of the scroll contents if the first
       // child is not a header (in that case, the padding is built into the
@@ -403,7 +403,7 @@ void TrayDetailedView::ShowProgress(double value, bool visible) {
 
   progress_bar_->SetValue(value);
   progress_bar_->SetVisible(visible);
-  child_at(kTitleRowSeparatorIndex)->SetVisible(!visible);
+  children()[size_t{kTitleRowSeparatorIndex}]->SetVisible(!visible);
 }
 
 views::Button* TrayDetailedView::CreateInfoButton(int info_accessible_name_id) {
