@@ -2993,6 +2993,7 @@ TEST_F(HttpStreamFactoryTest, ChangeSocketTag) {
   waiter3.stream()->Close(/* not_reusable = */ true);
 }
 
+// Regression test for https://crbug.com/954503.
 TEST_F(HttpStreamFactoryTest, ChangeSocketTagAvoidOverwrite) {
   SpdySessionDependencies session_deps;
   MockTaggingClientSocketFactory* socket_factory =
