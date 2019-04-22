@@ -51,7 +51,7 @@ build-native-meson:
   script:
   - export PATH=~/.local/bin:$PATH
   - cd "$BUILDDIR"
-  - meson --prefix="$PREFIX" -Dsimple-dmabuf-drm=intel ..
+  - meson --prefix="$PREFIX" -Dsimple-dmabuf-drm=intel -Dwerror=true ..
   - ninja -k0
   - ninja install
   - ninja test
