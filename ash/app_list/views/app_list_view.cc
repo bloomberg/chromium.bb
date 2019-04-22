@@ -1417,6 +1417,8 @@ void AppListView::StartAnimationForState(
 }
 
 void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {
+  state_animation_metrics_reporter_->SetTargetState(
+      ash::mojom::AppListViewState::kClosed);
   if (is_side_shelf_)
     return;
 
@@ -1427,8 +1429,6 @@ void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {
     animation_duration /= 2;
   }
 
-  state_animation_metrics_reporter_->SetTargetState(
-      ash::mojom::AppListViewState::kClosed);
   SetState(ash::mojom::AppListViewState::kClosed);
   app_list_main_view_->contents_view()->FadeOutOnClose(animation_duration);
 }
