@@ -236,15 +236,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetScrubbedLogs(GetLogsCallback callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kGetFeedbackLogs);
-    debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnGetAllLogs,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
   void GetScrubbedBigLogs(GetLogsCallback callback) override {
     // The PipeReaderWrapper is a self-deleting object; we don't have to worry
     // about ownership or lifetime. We need to create a new one for each Big
@@ -273,15 +264,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnGetAllLogs,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void GetUserLogFiles(GetLogsCallback callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kGetUserLogFiles);
-    debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnGetUserLogFiles,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -625,10 +607,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       logs[key] = value;
     }
     std::move(callback).Run(!sub_reader.HasMoreData() && !broken, logs);
-  }
-
-  void OnGetUserLogFiles(GetLogsCallback callback, dbus::Response* response) {
-    return OnGetAllLogs(std::move(callback), response);
   }
 
   void OnBigFeedbackLogsResponse(base::WeakPtr<PipeReaderWrapper> pipe_reader,

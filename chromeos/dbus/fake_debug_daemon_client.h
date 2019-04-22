@@ -53,12 +53,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
                      const std::vector<std::string>& perf_args,
                      int file_descriptor,
                      DBusMethodCallback<uint64_t> callback) override;
-  void GetScrubbedLogs(GetLogsCallback callback) override;
   void GetScrubbedBigLogs(GetLogsCallback callback) override;
   void GetAllLogs(GetLogsCallback callback) override;
   void GetLog(const std::string& log_name,
               DBusMethodCallback<std::string> callback) override;
-  void GetUserLogFiles(GetLogsCallback callback) override;
   void TestICMP(const std::string& ip_address,
                 const TestICMPCallback& callback) override;
   void TestICMPWithOptions(const std::string& ip_address,
