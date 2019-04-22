@@ -112,10 +112,10 @@ Polymer({
    *     for selecting the default destination.
    */
   init: function(
-      appKioskMode, printerName, serializedDestinationSelectionRulesStr) {
+      appKioskMode, defaultPrinter, serializedDestinationSelectionRulesStr) {
     this.isInAppKioskMode_ = appKioskMode;
     this.$.destinationSettings.initDestinationStore(
-        printerName, serializedDestinationSelectionRulesStr);
+        defaultPrinter, serializedDestinationSelectionRulesStr);
   },
 
   /**

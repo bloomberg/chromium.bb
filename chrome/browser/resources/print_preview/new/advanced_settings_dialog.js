@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 Polymer({
-  is: 'print-preview-advanced-dialog',
+  is: 'print-preview-advanced-settings-dialog',
 
   behaviors: [SettingsBehavior, I18nBehavior],
 

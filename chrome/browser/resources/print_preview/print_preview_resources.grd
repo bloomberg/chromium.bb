@@ -23,12 +23,12 @@
                  file="new/app.js"
                  type="chrome_html"
                  preprocess="true" />
-      <structure name="IDR_PRINT_PREVIEW_NEW_PRINT_PREVIEW_SIDEBAR_HTML"
-                 file="new/print_preview_sidebar.html"
+      <structure name="IDR_PRINT_PREVIEW_NEW_SIDEBAR_HTML"
+                 file="new/sidebar.html"
                  type="chrome_html"
                  preprocess="true" />
-      <structure name="IDR_PRINT_PREVIEW_NEW_PRINT_PREVIEW_SIDEBAR_JS"
-                 file="new/print_preview_sidebar.js"
+      <structure name="IDR_PRINT_PREVIEW_NEW_SIDEBAR_JS"
+                 file="new/sidebar.js"
                  type="chrome_html"
                  preprocess="true" />
       <structure name="IDR_PRINT_PREVIEW_NEW_MODEL_HTML"

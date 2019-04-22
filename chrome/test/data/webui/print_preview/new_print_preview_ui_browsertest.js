@@ -69,7 +69,7 @@ TEST_F('PrintPreviewAppTest', 'PrintPresets', function() {
 PrintPreviewSidebarTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/new/print_preview_sidebar.html';
+    return 'chrome://print/new/sidebar.html';
   }
 
   /** @override */

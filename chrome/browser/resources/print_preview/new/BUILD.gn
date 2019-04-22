@@ -42,6 +42,7 @@ js_type_check("closure_compile") {
     ":select_behavior",
     ":settings_behavior",
     ":settings_select",
+    ":sidebar",
     ":state",
   ]
 
@@ -53,6 +54,8 @@ js_type_check("closure_compile") {
 js_library("app") {
   deps = [
     ":model",
+    ":preview_area",
+    ":sidebar",
     ":state",
     "..:cloud_print_interface",
     "..:cloud_print_interface_manager",
@@ -67,7 +70,7 @@ js_library("app") {
   ]
 }
 
-js_library("print_preview_sidebar") {
+js_library("sidebar") {
   deps = [
     ":advanced_options_settings",
     ":button_strip",

@@ -38,7 +38,7 @@ cr.define('advanced_dialog_test', function() {
       document.body.appendChild(model);
       model.set('settings.vendorItems.available', true);
 
-      dialog = document.createElement('print-preview-advanced-dialog');
+      dialog = document.createElement('print-preview-advanced-settings-dialog');
 
       // Set up settings. Only need the vendor items.
       dialog.settings = model.settings;

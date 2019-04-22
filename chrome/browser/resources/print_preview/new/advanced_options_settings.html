@@ -30,10 +30,10 @@
       </div>
     </print-preview-settings-section>
     <template is="dom-if" if="[[showAdvancedDialog_]]" restamp>
-      <print-preview-advanced-dialog
+      <print-preview-advanced-settings-dialog
           settings="[[settings]]" destination="[[destination]]"
           on-close="onDialogClose_">
-      </print-preview-advanced-dialog>
+      </print-preview-advanced-settings-dialog>
     </template>
   </template>
   <script src="advanced_options_settings.js"></script>
