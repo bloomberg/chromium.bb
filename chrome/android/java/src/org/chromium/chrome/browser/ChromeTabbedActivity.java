@@ -141,6 +141,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
+import org.chromium.chrome.browser.tasks.EngagementTimeUtil;
+import org.chromium.chrome.browser.tasks.JourneyManager;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.TasksUma;
 import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
@@ -749,6 +751,12 @@ public class ChromeTabbedActivity
                                 this);
                 mOverviewModeController.overrideOverviewModeController(
                         gridTabSwitcher.getOverviewModeController());
+            }
+
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_ENGAGEMENT_REPORTING_ANDROID)) {
+                // The lifecycle of this object is managed by the lifecycle dispatcher.
+                new JourneyManager(getTabModelSelector(), getLifecycleDispatcher(),
+                        getOverviewModeBehavior(), new EngagementTimeUtil());
             }
 
             super.finishNativeInitialization();
