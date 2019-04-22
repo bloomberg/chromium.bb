@@ -118,7 +118,6 @@ class NET_EXPORT HostResolver {
   // |max_retry_attempts| is the maximum number of times we will retry for host
   // resolution. Pass HostResolver::kDefaultRetryAttempts to choose a default
   // value.
-  // |enable_caching| controls whether a HostCache is used.
   struct NET_EXPORT Options {
     Options();
 
@@ -126,9 +125,6 @@ class NET_EXPORT HostResolver {
 
     size_t max_concurrent_resolves;
     size_t max_retry_attempts;
-    // TODO(crbug.com/934402): Remove once caching is fully handled and enabled
-    // at the per-context level.
-    bool enable_caching;
   };
 
   // Factory class. Useful for classes that need to inject and override resolver

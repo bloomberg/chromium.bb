@@ -1355,13 +1355,10 @@ void NetworkContext::CreateHostResolver(
     // same net::HostResolver with the same scheduler and cache can be used with
     // different overrides.  But since this is only used for special cases for
     // now, much easier to create entirely separate net::HostResolver instances.
-    net::HostResolver::Options options;
-    options.enable_caching = false;
-
     private_internal_resolver =
         network_service_->host_resolver_factory()->CreateStandaloneResolver(
-            url_request_context_->net_log(), options, "",
-            false /* enable_caching */);
+            url_request_context_->net_log(), net::HostResolver::Options(),
+            "" /* host_mapping_rules */, false /* enable_caching */);
     private_internal_resolver->SetRequestContext(url_request_context_);
     internal_resolver = private_internal_resolver.get();
 

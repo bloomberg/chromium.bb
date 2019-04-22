@@ -80,7 +80,6 @@ HostResolver::Options DefaultOptions() {
   HostResolver::Options options;
   options.max_concurrent_resolves = kMaxJobs;
   options.max_retry_attempts = kMaxRetryAttempts;
-  options.enable_caching = true;
   return options;
 }
 
@@ -477,6 +476,15 @@ class HostResolverManagerTest : public TestWithScopedTaskEnvironment {
                                       true /* ipv6_reachable */);
   }
 
+  void DestroyResolver() {
+    if (!resolver_)
+      return;
+
+    if (host_cache_)
+      resolver_->RemoveHostCacheInvalidator(host_cache_->invalidator());
+    resolver_ = nullptr;
+  }
+
   // This HostResolverManager will only allow 1 outstanding resolve at a time
   // and perform no retries.
   void CreateSerialResolver() {
@@ -488,25 +496,33 @@ class HostResolverManagerTest : public TestWithScopedTaskEnvironment {
  protected:
   // testing::Test implementation:
   void SetUp() override {
+    host_cache_ = HostCache::CreateDefaultCache();
     CreateResolver();
     request_context_ = std::make_unique<TestURLRequestContext>();
-    host_cache_ = HostCache::CreateDefaultCache();
   }
 
   void TearDown() override {
-    if (resolver_.get())
+    if (resolver_) {
       EXPECT_EQ(0u, resolver_->num_running_dispatcher_jobs_for_tests());
+      if (host_cache_)
+        resolver_->RemoveHostCacheInvalidator(host_cache_->invalidator());
+    }
     EXPECT_FALSE(proc_->HasBlockedRequests());
   }
 
   virtual void CreateResolverWithLimitsAndParams(size_t max_concurrent_resolves,
                                                  const ProcTaskParams& params,
                                                  bool ipv6_reachable) {
+    DestroyResolver();
+
     HostResolverManager::Options options = DefaultOptions();
     options.max_concurrent_resolves = max_concurrent_resolves;
     resolver_.reset(
         new TestHostResolverManager(options, nullptr, ipv6_reachable));
     resolver_->set_proc_params_for_test(params);
+
+    if (host_cache_)
+      resolver_->AddHostCacheInvalidator(host_cache_->invalidator());
   }
 
   // Friendship is not inherited, so use proxies to access those.
@@ -530,15 +546,14 @@ class HostResolverManagerTest : public TestWithScopedTaskEnvironment {
 
   const std::pair<const HostCache::Key, HostCache::Entry>* GetCacheHit(
       const HostCache::Key& key) {
-    DCHECK(resolver_.get() && resolver_->GetHostCache());
-    return resolver_->GetHostCache()->LookupStale(
-        key, base::TimeTicks(), nullptr, false /* ignore_secure */);
+    DCHECK(host_cache_);
+    return host_cache_->LookupStale(key, base::TimeTicks(), nullptr,
+                                    false /* ignore_secure */);
   }
 
   void MakeCacheStale() {
-    DCHECK(resolver_.get());
-    resolver_->GetHostCache()->OnNetworkChange();
-    host_cache_->OnNetworkChange();
+    DCHECK(host_cache_);
+    host_cache_->Invalidate();
   }
 
   IPEndPoint CreateExpected(const std::string& ip_literal, uint16_t port) {
@@ -781,7 +796,7 @@ TEST_F(HostResolverManagerTest, AbortedAsynchronousLookup) {
   ASSERT_TRUE(proc_->WaitFor(1u));
 
   // Resolver is destroyed while job is running on WorkerPool.
-  resolver_.reset();
+  DestroyResolver();
 
   proc_->SignalAll();
 
@@ -1025,7 +1040,7 @@ TEST_F(HostResolverManagerTest, DeleteWithinCallback) {
           DCHECK(!response->complete());
         }
 
-        resolver_.reset();
+        DestroyResolver();
         std::move(completion_callback).Run(error);
       });
 
@@ -1075,7 +1090,7 @@ TEST_F(HostResolverManagerTest, MAYBE_DeleteWithinAbortedCallback) {
               // the jobs.
               DCHECK(!response->complete());
             }
-            resolver_.reset();
+            DestroyResolver();
             std::move(completion_callback).Run(error);
           });
 
@@ -1332,6 +1347,35 @@ TEST_F(HostResolverManagerTest, FlushCacheOnIPAddressChange) {
   EXPECT_EQ(2u, proc_->GetCaptureList().size());  // Expected increase.
 }
 
+TEST_F(HostResolverManagerTest, FlushCacheOnDnsConfigChange) {
+  proc_->SignalMultiple(2u);  // One before the flush, one after.
+
+  // Resolve to load cache.
+  ResolveHostResponseHelper initial_response(resolver_->CreateRequest(
+      HostPortPair("host1", 70), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(initial_response.result_error(), IsOk());
+  EXPECT_EQ(1u, proc_->GetCaptureList().size());
+
+  // Result expected to come from the cache.
+  ResolveHostResponseHelper cached_response(resolver_->CreateRequest(
+      HostPortPair("host1", 75), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(cached_response.result_error(), IsOk());
+  EXPECT_EQ(1u, proc_->GetCaptureList().size());  // No expected increase.
+
+  // Flush cache by triggering a DNS config change.
+  NetworkChangeNotifier::NotifyObserversOfDNSChangeForTests();
+  base::RunLoop().RunUntilIdle();  // Notification happens async.
+
+  // Expect flushed from cache and therefore served from |proc_|.
+  ResolveHostResponseHelper flushed_response(resolver_->CreateRequest(
+      HostPortPair("host1", 80), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(flushed_response.result_error(), IsOk());
+  EXPECT_EQ(2u, proc_->GetCaptureList().size());  // Expected increase.
+}
+
 // Test that IP address changes send ERR_NETWORK_CHANGED to pending requests.
 TEST_F(HostResolverManagerTest, AbortOnIPAddressChanged) {
   ResolveHostResponseHelper response(resolver_->CreateRequest(
@@ -1348,7 +1392,7 @@ TEST_F(HostResolverManagerTest, AbortOnIPAddressChanged) {
 
   EXPECT_THAT(response.result_error(), IsError(ERR_NETWORK_CHANGED));
   EXPECT_FALSE(response.request()->GetAddressResults());
-  EXPECT_EQ(0u, resolver_->GetHostCache()->size());
+  EXPECT_EQ(0u, host_cache_->size());
 }
 
 // Test that initial DNS config read signals do not abort pending requests.
@@ -1473,7 +1517,7 @@ TEST_F(HostResolverManagerTest, AbortOnlyExistingRequestsOnIPAddressChange) {
 
   // Verify that results of aborted Jobs were not cached.
   EXPECT_EQ(6u, proc_->GetCaptureList().size());
-  EXPECT_EQ(3u, resolver_->GetHostCache()->size());
+  EXPECT_EQ(3u, host_cache_->size());
 }
 
 // Tests that when the maximum threads is set to 1, requests are dequeued
@@ -1776,7 +1820,7 @@ TEST_F(HostResolverManagerTest, QueueOverflow) {
   EXPECT_EQ("req7", capture_list[3].hostname);
 
   // Verify that the evicted (incomplete) requests were not cached.
-  EXPECT_EQ(4u, resolver_->GetHostCache()->size());
+  EXPECT_EQ(4u, host_cache_->size());
 
   for (size_t i = 0; i < responses.size(); ++i) {
     EXPECT_TRUE(responses[i]->complete()) << i;
@@ -2185,7 +2229,9 @@ TEST_F(HostResolverManagerTest, NameCollisionIcann) {
 TEST_F(HostResolverManagerTest, IsIPv6Reachable) {
   // The real HostResolverManager is needed since TestHostResolverManager will
   // bypass the IPv6 reachability tests.
-  resolver_.reset(new HostResolverManager(DefaultOptions(), nullptr));
+  DestroyResolver();
+  host_cache_ = nullptr;
+  resolver_ = std::make_unique<HostResolverManager>(DefaultOptions(), nullptr);
 
   // Verify that two consecutive calls return the same value.
   TestNetLog test_net_log;
@@ -2288,6 +2334,52 @@ TEST_F(HostResolverManagerTest, IsSpeculative) {
 
   EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
   EXPECT_EQ(1u, proc_->GetCaptureList().size());  // No increase.
+}
+
+// Test that if a Job with multiple requests, each with its own different
+// HostCache, completes, the result is cached in all request HostCaches.
+TEST_F(HostResolverManagerTest, MultipleCachesForMultipleRequests) {
+  proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42");
+
+  std::unique_ptr<HostCache> cache2 = HostCache::CreateDefaultCache();
+  resolver_->AddHostCacheInvalidator(cache2->invalidator());
+
+  ResolveHostResponseHelper response1(resolver_->CreateRequest(
+      HostPortPair("just.testing", 80), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  ResolveHostResponseHelper response2(resolver_->CreateRequest(
+      HostPortPair("just.testing", 85), NetLogWithSource(), base::nullopt,
+      request_context_.get(), cache2.get()));
+  ASSERT_EQ(1u, resolver_->num_jobs_for_testing());
+
+  proc_->SignalMultiple(1u);
+  EXPECT_THAT(response1.result_error(), IsOk());
+  EXPECT_THAT(response2.result_error(), IsOk());
+
+  HostResolver::ResolveHostParameters local_resolve_parameters;
+  local_resolve_parameters.source = HostResolverSource::LOCAL_ONLY;
+
+  // Confirm |host_cache_| contains the result.
+  ResolveHostResponseHelper cached_response1(resolver_->CreateRequest(
+      HostPortPair("just.testing", 81), NetLogWithSource(),
+      local_resolve_parameters, request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(cached_response1.result_error(), IsOk());
+  EXPECT_THAT(
+      cached_response1.request()->GetAddressResults().value().endpoints(),
+      testing::ElementsAre(CreateExpected("192.168.1.42", 81)));
+  EXPECT_TRUE(cached_response1.request()->GetStaleInfo());
+
+  // Confirm |cache2| contains the result.
+  ResolveHostResponseHelper cached_response2(resolver_->CreateRequest(
+      HostPortPair("just.testing", 82), NetLogWithSource(),
+      local_resolve_parameters, request_context_.get(), cache2.get()));
+  EXPECT_THAT(cached_response2.result_error(), IsOk());
+  EXPECT_THAT(
+      cached_response2.request()->GetAddressResults().value().endpoints(),
+      testing::ElementsAre(CreateExpected("192.168.1.42", 82)));
+  EXPECT_TRUE(cached_response2.request()->GetStaleInfo());
+
+  resolver_->RemoveHostCacheInvalidator(cache2->invalidator());
 }
 
 #if BUILDFLAG(ENABLE_MDNS)
@@ -3262,9 +3354,6 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
   HostResolverManagerDnsTest() : dns_client_(nullptr) {}
 
  protected:
-  // testing::Test implementation:
-  void SetUp() override { CreateResolver(); }
-
   void TearDown() override {
     HostResolverManagerTest::TearDown();
     ChangeDnsConfig(DnsConfig());
@@ -3274,12 +3363,17 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
   void CreateResolverWithLimitsAndParams(size_t max_concurrent_resolves,
                                          const ProcTaskParams& params,
                                          bool ipv6_reachable) override {
+    DestroyResolver();
+
     HostResolverManager::Options options = DefaultOptions();
     options.max_concurrent_resolves = max_concurrent_resolves;
     resolver_.reset(
         new TestHostResolverManager(options, nullptr, ipv6_reachable));
     resolver_->set_proc_params_for_test(params);
     UseMockDnsClient(DnsConfig(), CreateDefaultDnsRules());
+
+    if (host_cache_)
+      resolver_->AddHostCacheInvalidator(host_cache_->invalidator());
   }
 
   // Call after CreateResolver() to update the resolver with a new MockDnsClient
@@ -4255,7 +4349,7 @@ TEST_F(HostResolverManagerDnsTest, DeleteWithActiveTransactions) {
   }
   EXPECT_EQ(10u, num_running_dispatcher_jobs());
 
-  resolver_.reset();
+  DestroyResolver();
 
   base::RunLoop().RunUntilIdle();
   for (auto& response : responses) {
@@ -4275,7 +4369,7 @@ TEST_F(HostResolverManagerDnsTest, DeleteWithCompletedRequests) {
               testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 80),
                                             CreateExpected("::1", 80)));
 
-  resolver_.reset();
+  DestroyResolver();
 
   // Completed requests should be unaffected by manager destruction.
   EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
@@ -4849,7 +4943,7 @@ TEST_F(HostResolverManagerDnsTest, NoIPv6OnWifi) {
   // to remove itself from the NetworkChangeNotifier. If this happens after a
   // new NetworkChangeNotifier is active, then it will not remove itself from
   // the old NetworkChangeNotifier which is a potential use-after-free.
-  resolver_ = nullptr;
+  DestroyResolver();
   test::ScopedMockNetworkChangeNotifier notifier;
   CreateSerialResolver();  // To guarantee order of resolutions.
   resolver_->SetNoIPv6OnWifi(true);
@@ -4943,8 +5037,8 @@ TEST_F(HostResolverManagerDnsTest, NotFoundTTL) {
                      HostResolverSource::ANY);
   HostCache::EntryStaleness staleness;
   const std::pair<const HostCache::Key, HostCache::Entry>* cache_result =
-      resolver_->GetHostCache()->Lookup(key, base::TimeTicks::Now(),
-                                        false /* ignore_secure */);
+      host_cache_->Lookup(key, base::TimeTicks::Now(),
+                          false /* ignore_secure */);
   EXPECT_TRUE(!!cache_result);
   EXPECT_TRUE(cache_result->second.has_ttl());
   EXPECT_THAT(cache_result->second.ttl(), base::TimeDelta::FromSeconds(86400));
@@ -4958,8 +5052,8 @@ TEST_F(HostResolverManagerDnsTest, NotFoundTTL) {
   EXPECT_FALSE(no_domain_response.request()->GetAddressResults());
   HostCache::Key nxkey("nodomain", DnsQueryType::UNSPECIFIED, 0,
                        HostResolverSource::ANY);
-  cache_result = resolver_->GetHostCache()->Lookup(
-      nxkey, base::TimeTicks::Now(), false /* ignore_secure */);
+  cache_result = host_cache_->Lookup(nxkey, base::TimeTicks::Now(),
+                                     false /* ignore_secure */);
   EXPECT_TRUE(!!cache_result);
   EXPECT_TRUE(cache_result->second.has_ttl());
   EXPECT_THAT(cache_result->second.ttl(), base::TimeDelta::FromSeconds(86400));
@@ -5178,7 +5272,7 @@ TEST_F(HostResolverManagerDnsTest, ResolveDnsOverHttpsServerName) {
 }
 
 TEST_F(HostResolverManagerDnsTest, AddDnsOverHttpsServerAfterConfig) {
-  resolver_ = nullptr;
+  DestroyResolver();
   test::ScopedMockNetworkChangeNotifier notifier;
   CreateSerialResolver();  // To guarantee order of resolutions.
   notifier.mock_network_change_notifier()->SetConnectionType(
@@ -5215,7 +5309,7 @@ TEST_F(HostResolverManagerDnsTest, AddDnsOverHttpsServerAfterConfig) {
 }
 
 TEST_F(HostResolverManagerDnsTest, AddDnsOverHttpsServerBeforeConfig) {
-  resolver_ = nullptr;
+  DestroyResolver();
   test::ScopedMockNetworkChangeNotifier notifier;
   CreateSerialResolver();  // To guarantee order of resolutions.
   resolver_->SetDnsClientEnabled(true);
@@ -5252,7 +5346,7 @@ TEST_F(HostResolverManagerDnsTest, AddDnsOverHttpsServerBeforeConfig) {
 }
 
 TEST_F(HostResolverManagerDnsTest, AddDnsOverHttpsServerBeforeClient) {
-  resolver_ = nullptr;
+  DestroyResolver();
   test::ScopedMockNetworkChangeNotifier notifier;
   CreateSerialResolver();  // To guarantee order of resolutions.
   std::string server("https://dnsserver.example.net/dns-query{?dns}");
@@ -5290,7 +5384,7 @@ TEST_F(HostResolverManagerDnsTest, AddDnsOverHttpsServerBeforeClient) {
 }
 
 TEST_F(HostResolverManagerDnsTest, AddDnsOverHttpsServerAndThenRemove) {
-  resolver_ = nullptr;
+  DestroyResolver();
   test::ScopedMockNetworkChangeNotifier notifier;
   CreateSerialResolver();  // To guarantee order of resolutions.
   std::string server("https://dns.example.com/");
@@ -5484,6 +5578,37 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_ClearOverrides) {
 
   resolver_->SetDnsConfigOverrides(DnsConfigOverrides());
   EXPECT_TRUE(original_config.Equals(*dns_client_->GetConfig()));
+}
+
+TEST_F(HostResolverManagerDnsTest, FlushCacheOnDnsConfigOverridesChange) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  HostResolver::ResolveHostParameters local_source_parameters;
+  local_source_parameters.source = HostResolverSource::LOCAL_ONLY;
+
+  // Populate cache.
+  ResolveHostResponseHelper initial_response(resolver_->CreateRequest(
+      HostPortPair("ok", 70), NetLogWithSource(), base::nullopt,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(initial_response.result_error(), IsOk());
+
+  // Confirm result now cached.
+  ResolveHostResponseHelper cached_response(resolver_->CreateRequest(
+      HostPortPair("ok", 75), NetLogWithSource(), local_source_parameters,
+      request_context_.get(), host_cache_.get()));
+  ASSERT_THAT(cached_response.result_error(), IsOk());
+  ASSERT_TRUE(cached_response.request()->GetStaleInfo());
+
+  // Flush cache by triggering a DnsConfigOverrides change.
+  DnsConfigOverrides overrides;
+  overrides.attempts = 4;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  // Expect no longer cached
+  ResolveHostResponseHelper flushed_response(resolver_->CreateRequest(
+      HostPortPair("ok", 80), NetLogWithSource(), local_source_parameters,
+      request_context_.get(), host_cache_.get()));
+  EXPECT_THAT(flushed_response.result_error(), IsError(ERR_DNS_CACHE_MISS));
 }
 
 // Test that even when using config overrides, a change to the base system

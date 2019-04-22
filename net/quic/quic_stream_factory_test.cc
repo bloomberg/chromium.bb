@@ -9284,7 +9284,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceAndHostResolutionSync) {
   HostCache* cache = host_resolver_->GetHostCache();
   cache->Set(key, entry, base::TimeTicks::Now(), zero);
   // Expire the cache
-  cache->OnNetworkChange();
+  cache->Invalidate();
 
   MockQuicData quic_data;
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -9381,7 +9381,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsyncStaleMatch) {
   HostCache* cache = host_resolver_->GetHostCache();
   cache->Set(key, entry, base::TimeTicks::Now(), zero);
   // Expire the cache
-  cache->OnNetworkChange();
+  cache->Invalidate();
 
   MockQuicData quic_data;
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -9443,7 +9443,7 @@ TEST_P(QuicStreamFactoryTest,
   HostCache* cache = host_resolver_->GetHostCache();
   cache->Set(key, entry, base::TimeTicks::Now(), zero);
   // Expire the cache
-  cache->OnNetworkChange();
+  cache->Invalidate();
 
   MockQuicData quic_data;
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -9511,7 +9511,7 @@ TEST_P(QuicStreamFactoryTest,
   HostCache* cache = host_resolver_->GetHostCache();
   cache->Set(key, entry, base::TimeTicks::Now(), zero);
   // Expire the cache
-  cache->OnNetworkChange();
+  cache->Invalidate();
 
   MockQuicData quic_data;
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -9572,7 +9572,7 @@ TEST_P(QuicStreamFactoryTest,
   HostCache* cache = host_resolver_->GetHostCache();
   cache->Set(key, entry, base::TimeTicks::Now(), zero);
   // Expire the cache
-  cache->OnNetworkChange();
+  cache->Invalidate();
 
   // Socket for the stale connection which will invoke connection closure.
   MockQuicData quic_data;
@@ -9647,7 +9647,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
   HostCache* cache = host_resolver_->GetHostCache();
   cache->Set(key, entry, base::TimeTicks::Now(), zero);
   // Expire the cache
-  cache->OnNetworkChange();
+  cache->Invalidate();
 
   MockQuicData quic_data;
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -9721,7 +9721,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
   HostCache* cache = host_resolver_->GetHostCache();
   cache->Set(key, entry, base::TimeTicks::Now(), zero);
   // Expire the cache
-  cache->OnNetworkChange();
+  cache->Invalidate();
 
   MockQuicData quic_data;
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -9842,7 +9842,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleSyncHostResolveError) {
   HostCache* cache = host_resolver_->GetHostCache();
   cache->Set(key, entry, base::TimeTicks::Now(), zero);
   // Expire the cache
-  cache->OnNetworkChange();
+  cache->Invalidate();
 
   // Socket for the stale connection which is supposed to disconnect.
   MockQuicData quic_data;
@@ -9897,7 +9897,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSMatches) {
   HostCache* cache = host_resolver_->GetHostCache();
   cache->Set(key, entry, base::TimeTicks::Now(), zero);
   // Expire the cache
-  cache->OnNetworkChange();
+  cache->Invalidate();
 
   // Simulate synchronous connect failure.
   MockQuicData quic_data;
@@ -9945,7 +9945,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSNoMatch) {
   HostCache* cache = host_resolver_->GetHostCache();
   cache->Set(key, entry, base::TimeTicks::Now(), zero);
   // Expire the cache
-  cache->OnNetworkChange();
+  cache->Invalidate();
 
   // Add failure for the stale connection.
   MockQuicData quic_data;
@@ -10009,7 +10009,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSNoMatchError) {
   HostCache* cache = host_resolver_->GetHostCache();
   cache->Set(key, entry, base::TimeTicks::Now(), zero);
   // Expire the cache
-  cache->OnNetworkChange();
+  cache->Invalidate();
 
   // Add failure for stale connection.
   MockQuicData quic_data;
@@ -10063,7 +10063,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
   HostCache* cache = host_resolver_->GetHostCache();
   cache->Set(key, entry, base::TimeTicks::Now(), zero);
   // Expire the cache
-  cache->OnNetworkChange();
+  cache->Invalidate();
 
   // Socket data for stale connection which is supposed to disconnect.
   MockQuicData quic_data;
@@ -10117,7 +10117,7 @@ TEST_P(QuicStreamFactoryTest,
   HostCache* cache = host_resolver_->GetHostCache();
   cache->Set(key, entry, base::TimeTicks::Now(), zero);
   // Expire the cache
-  cache->OnNetworkChange();
+  cache->Invalidate();
 
   MockQuicData quic_data;
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);

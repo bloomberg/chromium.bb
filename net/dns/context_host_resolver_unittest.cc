@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/test/simple_test_tick_clock.h"
+#include "base/time/time.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -18,6 +20,7 @@
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_test_util.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/dns_protocol.h"
@@ -258,6 +261,100 @@ TEST_F(ContextHostResolverTest, DestroyResolver_CompletedRequests) {
   // Expect completed results are still available.
   EXPECT_THAT(request->GetAddressResults().value().endpoints(),
               testing::ElementsAre(kEndpoint));
+}
+
+TEST_F(ContextHostResolverTest, ResolveFromCache) {
+  base::SimpleTestTickClock clock;
+  clock.Advance(base::TimeDelta::FromDays(62));  // Arbitrary non-zero time.
+
+  AddressList expected(kEndpoint);
+  std::unique_ptr<HostCache> cache = HostCache::CreateDefaultCache();
+  cache->Set(
+      HostCache::Key("example.com", DnsQueryType::UNSPECIFIED,
+                     0 /* host_resolver_flags */, HostResolverSource::ANY),
+      HostCache::Entry(OK, expected, HostCache::Entry::SOURCE_DNS,
+                       base::TimeDelta::FromDays(1)),
+      clock.NowTicks(), base::TimeDelta::FromDays(1));
+
+  auto resolver =
+      std::make_unique<ContextHostResolver>(manager_.get(), std::move(cache));
+  resolver->SetTickClockForTesting(&clock);
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::LOCAL_ONLY;
+  std::unique_ptr<HostResolver::ResolveHostRequest> request =
+      resolver->CreateRequest(HostPortPair("example.com", 100),
+                              NetLogWithSource(), parameters);
+
+  TestCompletionCallback callback;
+  int rv = request->Start(callback.callback());
+  EXPECT_THAT(callback.GetResult(rv), test::IsOk());
+  EXPECT_THAT(request->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(kEndpoint));
+}
+
+TEST_F(ContextHostResolverTest, ResultsAddedToCache) {
+  MockDnsClientRuleList rules;
+  rules.emplace_back("example.com", dns_protocol::kTypeA,
+                     SecureDnsMode::AUTOMATIC,
+                     MockDnsClientRule::Result(BuildTestDnsResponse(
+                         "example.com", kEndpoint.address())),
+                     false /* delay */);
+  rules.emplace_back(
+      "example.com", dns_protocol::kTypeAAAA, SecureDnsMode::AUTOMATIC,
+      MockDnsClientRule::Result(MockDnsClientRule::EMPTY), false /* delay */);
+  SetMockDnsRules(std::move(rules));
+
+  auto resolver = std::make_unique<ContextHostResolver>(
+      manager_.get(), HostCache::CreateDefaultCache());
+
+  std::unique_ptr<HostResolver::ResolveHostRequest> caching_request =
+      resolver->CreateRequest(HostPortPair("example.com", 103),
+                              NetLogWithSource(), base::nullopt);
+  TestCompletionCallback caching_callback;
+  int rv = caching_request->Start(caching_callback.callback());
+  EXPECT_THAT(caching_callback.GetResult(rv), test::IsOk());
+
+  HostResolver::ResolveHostParameters local_resolve_parameters;
+  local_resolve_parameters.source = HostResolverSource::LOCAL_ONLY;
+  std::unique_ptr<HostResolver::ResolveHostRequest> cached_request =
+      resolver->CreateRequest(HostPortPair("example.com", 100),
+                              NetLogWithSource(), local_resolve_parameters);
+
+  TestCompletionCallback callback;
+  rv = cached_request->Start(callback.callback());
+  EXPECT_THAT(callback.GetResult(rv), test::IsOk());
+  EXPECT_THAT(cached_request->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(kEndpoint));
+}
+
+// Test HostCacheInvalidator that counts number of requested invalidations.
+class TrackingHostCacheInvalidator : public HostCache::Invalidator {
+ public:
+  void Invalidate() override { ++num_invalidations_; }
+  int num_invalidations() { return num_invalidations_; }
+
+ private:
+  int num_invalidations_ = 0;
+};
+
+// Test that the underlying HostCache can receive invalidations from the manager
+// and that it safely does not receive invalidations after the resolver (and the
+// HostCache) is destroyed.
+TEST_F(ContextHostResolverTest, HostCacheInvalidation) {
+  TrackingHostCacheInvalidator invalidator;
+  std::unique_ptr<HostCache> cache = HostCache::CreateDefaultCache();
+  cache->set_invalidator_for_testing(&invalidator);
+
+  auto resolver =
+      std::make_unique<ContextHostResolver>(manager_.get(), std::move(cache));
+
+  manager_->InvalidateCachesForTesting();
+  EXPECT_EQ(1, invalidator.num_invalidations());
+
+  resolver = nullptr;
+  manager_->InvalidateCachesForTesting();
+  EXPECT_EQ(1, invalidator.num_invalidations());
 }
 
 }  // namespace net

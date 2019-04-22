@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/completion_once_callback.h"
@@ -119,6 +120,8 @@ class NET_EXPORT HostResolverManager
   // NetworkChangeNotifier.
   void SetDnsClient(std::unique_ptr<DnsClient> dns_client);
 
+  // If |host_cache| is non-null, its HostCache::Invalidator must have already
+  // been added (via AddHostCacheInvalidator()).
   std::unique_ptr<CancellableRequest> CreateRequest(
       const HostPortPair& host,
       const NetLogWithSource& net_log,
@@ -129,24 +132,26 @@ class NET_EXPORT HostResolverManager
                                                    DnsQueryType query_type);
   void SetDnsClientEnabled(bool enabled);
 
-  HostCache* GetHostCache();
-  bool HasCached(base::StringPiece hostname,
-                 HostCache::Entry::Source* source_out,
-                 HostCache::EntryStaleness* stale_out,
-                 bool* secure_out) const;
-
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const;
-
-  // Returns the number of host cache entries that were restored, or 0 if there
-  // is no cache.
-  size_t LastRestoredCacheSize() const;
-  // Returns the number of entries in the host cache, or 0 if there is no cache.
-  size_t CacheSize() const;
 
   void SetNoIPv6OnWifi(bool no_ipv6_on_wifi);
   bool GetNoIPv6OnWifi();
 
   void SetDnsConfigOverrides(const DnsConfigOverrides& overrides);
+
+  // Support for invalidating HostCaches on changes to network or DNS
+  // configuration. HostCaches should register/deregister invalidators here
+  // rather than attempting to listen for relevant network change signals
+  // themselves because HostResolverManager needs to coordinate invalidations
+  // with in-progress resolves and because some invalidations are triggered by
+  // changes to manager properties/configuration rather than pure network
+  // changes.
+  //
+  // Note: Invalidation handling must not call back into HostResolverManager as
+  // the invalidation is expected to be handled atomically with other clearing
+  // and aborting actions.
+  void AddHostCacheInvalidator(HostCache::Invalidator* invalidator);
+  void RemoveHostCacheInvalidator(const HostCache::Invalidator* invalidator);
 
   const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
   GetDnsOverHttpsServersForTesting() const;
@@ -154,6 +159,8 @@ class NET_EXPORT HostResolverManager
   void set_proc_params_for_test(const ProcTaskParams& proc_params) {
     proc_params_ = proc_params;
   }
+
+  void InvalidateCachesForTesting() { InvalidateCaches(); }
 
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
@@ -240,6 +247,7 @@ class NET_EXPORT HostResolverManager
       HostResolverFlags flags,
       ResolveHostParameters::CacheUsage cache_usage,
       const NetLogWithSource& request_net_log,
+      HostCache* cache,
       DnsQueryType* out_effective_query_type,
       HostResolverFlags* out_effective_host_resolver_flags,
       base::Optional<HostCache::EntryStaleness>* out_stale_info);
@@ -264,6 +272,7 @@ class NET_EXPORT HostResolverManager
   //
   // If |allow_stale| is true, then stale cache entries can be returned.
   base::Optional<HostCache::Entry> ServeFromCache(
+      HostCache* cache,
       const HostCache::Key& key,
       bool allow_stale,
       base::Optional<HostCache::EntryStaleness>* out_stale_info);
@@ -304,7 +313,8 @@ class NET_EXPORT HostResolverManager
   virtual void RunLoopbackProbeJob();
 
   // Records the result in cache if cache is present.
-  void CacheResult(const HostCache::Key& key,
+  void CacheResult(HostCache* cache,
+                   const HostCache::Key& key,
                    const HostCache::Entry& entry,
                    base::TimeDelta ttl);
 
@@ -362,9 +372,7 @@ class NET_EXPORT HostResolverManager
   // is the current DNS config and is only used if !HaveDnsConfig().
   void UpdateModeForHistogram(const DnsConfig& dns_config);
 
-  // Cache of host resolution results.
-  // TODO(crbug.com/934402): Remove the manager-wide HostCache.
-  std::unique_ptr<HostCache> cache_;
+  void InvalidateCaches();
 
   // Used for multicast DNS tasks. Created on first use using
   // GetOrCreateMndsClient().
@@ -436,6 +444,13 @@ class NET_EXPORT HostResolverManager
 
   // Shared tick clock, overridden for testing.
   const base::TickClock* tick_clock_;
+
+  // For HostCache invalidation notifications.
+  base::ObserverList<HostCache::Invalidator,
+                     true /* check_empty */,
+                     false /* allow_reentrancy */>
+      host_cache_invalidators_;
+  bool invalidation_in_progress_;
 
   THREAD_CHECKER(thread_checker_);
 

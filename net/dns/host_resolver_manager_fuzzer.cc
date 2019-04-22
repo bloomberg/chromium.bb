@@ -205,7 +205,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     options.max_concurrent_resolves =
         data_provider.ConsumeIntegralInRange(1, 8);
     bool enable_caching = data_provider.ConsumeBool();
-    options.enable_caching = enable_caching;
     net::FuzzedContextHostResolver host_resolver(
         options, &net_log, &data_provider, enable_caching);
     host_resolver.SetDnsClientEnabled(data_provider.ConsumeBool());

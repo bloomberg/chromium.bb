@@ -379,7 +379,7 @@ TEST_F(SingleTreeTrackerTest,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
   // Simulate network change.
-  host_resolver_.GetHostCache()->OnNetworkChange();
+  host_resolver_.GetHostCache()->Invalidate();
 
   base::HistogramTester histograms;
   // Provide an STH to the tree_tracker_.
@@ -445,7 +445,7 @@ TEST_F(SingleTreeTrackerTest, EntriesIndistinguishedBySecurity) {
   histograms.ExpectUniqueSample(kCanCheckForInclusionHistogramName, 2, 1);
 
   // Simulate network change.
-  host_resolver_.GetHostCache()->OnNetworkChange();
+  host_resolver_.GetHostCache()->Invalidate();
   AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 

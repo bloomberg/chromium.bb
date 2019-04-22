@@ -93,8 +93,7 @@ PrioritizedDispatcher::Limits HostResolver::Options::GetDispatcherLimits()
 
 HostResolver::Options::Options()
     : max_concurrent_resolves(kDefaultParallelism),
-      max_retry_attempts(kDefaultRetryAttempts),
-      enable_caching(true) {}
+      max_retry_attempts(kDefaultRetryAttempts) {}
 
 std::unique_ptr<HostResolver> HostResolver::Factory::CreateResolver(
     HostResolverManager* manager,
