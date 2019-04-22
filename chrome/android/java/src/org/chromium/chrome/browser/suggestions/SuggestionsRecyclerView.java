@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
@@ -118,6 +119,12 @@ public class SuggestionsRecyclerView extends RecyclerView {
         helper.attachToRecyclerView(this);
 
         addOnScrollListener(new SuggestionsMetrics.ScrollEventReporter());
+
+        // Work around https://crbug.com/943873 where default focus highlight shows up after
+        // toggling dark mode.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            setDefaultFocusHighlightEnabled(false);
+        }
     }
 
     public boolean isFirstItemVisible() {
