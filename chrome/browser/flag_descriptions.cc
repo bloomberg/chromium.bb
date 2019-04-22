@@ -1679,6 +1679,12 @@ const char kSafeSearchUrlReportingName[] = "SafeSearch URLs reporting.";
 const char kSafeSearchUrlReportingDescription[] =
     "If enabled, inappropriate URLs can be reported back to SafeSearch.";
 
+const char kSameSiteByDefaultCookiesName[] = "SameSite by default cookies";
+const char kSameSiteByDefaultCookiesDescription[] =
+    "Treat cookies that don't specify a SameSite attribute as if they were "
+    "SameSite=Lax. Sites must specify SameSite=None in order to enable "
+    "third-party usage.";
+
 const char kSamplingHeapProfilerName[] = "Native memory sampling profiler.";
 const char kSamplingHeapProfilerDescription[] =
     "Enables native memory sampling profiler with specified rate in KiB. "

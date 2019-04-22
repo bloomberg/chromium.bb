@@ -3958,6 +3958,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMacSystemMediaPermissionsInfoUi)},
 #endif  // defined(OS_MACOSX)
 
+    {"same-site-by-default-cookies",
+     flag_descriptions::kSameSiteByDefaultCookiesName,
+     flag_descriptions::kSameSiteByDefaultCookiesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(net::features::kSameSiteByDefaultCookies)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

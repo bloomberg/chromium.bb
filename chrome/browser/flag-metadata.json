@@ -2731,6 +2731,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "same-site-by-default-cookies",
+    "owners": [ "chlily", "morlovich" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "scheduler-configuration",
     "owners": [ "kerrnel", "mnissler" ],
     "expiry_milestone": 76
