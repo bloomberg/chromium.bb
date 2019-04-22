@@ -697,6 +697,12 @@ void WindowEventDispatcher::OnWindowDestroyed(Window* window) {
   // We observe all windows regardless of what root Window (if any) they're
   // attached to.
   observer_manager_.Remove(window);
+
+  // In theory this should be cleaned up by other checks, but we are getting
+  // crashes that seem to indicate otherwise. See https://crbug.com/942552 for
+  // one case.
+  if (window == mouse_moved_handler_)
+    mouse_moved_handler_ = nullptr;
 }
 
 void WindowEventDispatcher::OnWindowAddedToRootWindow(Window* attached) {
