@@ -6163,3 +6163,4 @@ crbug.com/954628 [ Win ] external/wpt/payment-request/payment-request-canmakepay
 crbug.com/954994 [ Mac ]  images/jpeg-yuv-image-decoding.html [ Pass Failure ]
 crbug.com/954994 [ Mac ]  virtual/exotic-color-space/images/jpeg-yuv-image-decoding.html [ Pass Failure ]
 crbug.com/954994 [ Mac ]  virtual/gpu-rasterization/images/jpeg-yuv-image-decoding.html [ Pass Failure ]
+crbug.com/954319 [ Linux ] http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-in-multiple-workers.js [ Pass Timeout ]
