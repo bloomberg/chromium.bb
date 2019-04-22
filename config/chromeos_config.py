@@ -2058,6 +2058,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'monroe',
       'nami',
       'nocturne',
+      'nyan_big',
+      'nyan_blaze',
       'nyan_kitty',
       'oak',
       'octavius',
@@ -2126,8 +2128,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lakitu', # crbug.com/953855
       'lakitu-st', # crbug.com/953855
       'mistral', # contact: roopeshr@
-      'nyan_big', # crbug.com/954185
-      'nyan_blaze', # crbug.com/954185
   ])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
