@@ -323,53 +323,6 @@ class LitePage(IntegrationTest):
       self.assertEqual(0, lite_page_responses)
       self.assertNotEqual(0, lofi_resource)
 
-  # Checks that the server provides a preview (either Lite Page or fallback
-  # to LoFi) for a 2G connection.
-  # Note: this test is for the CPAT protocol change in M-61.
-  @ChromeVersionEqualOrAfterM(61)
-  def testPreviewProvidedForSlowConnection(self):
-    with TestDriver() as test_driver:
-      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--enable-features=NetworkQualityEstimator'
-                               '<NetworkQualityEstimator,'
-                               'Previews,DataReductionProxyDecidesTransform')
-      test_driver.AddChromeArg('--force-fieldtrial-params='
-                               'NetworkQualityEstimator.Enabled:'
-                               'force_effective_connection_type/2G')
-      test_driver.AddChromeArg(
-          '--data-reduction-proxy-experiment=force_lite_page')
-      test_driver.AddChromeArg(
-          '--force-fieldtrials='
-          'NetworkQualityEstimator/Enabled/'
-          'DataReductionProxyPreviewsBlackListTransition/Enabled/')
-
-      test_driver.LoadURL('http://check.googlezip.net/test.html')
-
-      lite_page_responses = 0
-      page_policies_responses = 0
-      checked_chrome_proxy_header = False
-      for response in test_driver.GetHTTPResponses():
-        if response.request_headers:
-          self.assertEqual('2G', response.request_headers['chrome-proxy-ect'])
-          checked_chrome_proxy_header = True
-        if response.url.endswith('html'):
-          if self.checkLitePageResponse(response):
-            lite_page_responses = lite_page_responses + 1
-          elif 'chrome-proxy' in response.response_headers:
-            self.assertIn('page-policies',
-                             response.response_headers['chrome-proxy'])
-            page_policies_responses = page_policies_responses + 1
-
-      self.assertTrue(lite_page_responses == 1 or page_policies_responses == 1)
-      self.assertTrue(checked_chrome_proxy_header)
-
-      if (lite_page_responses == 1):
-        self.assertPreviewShownViaHistogram(test_driver, 'LitePage')
-        self.assertPreviewNotShownViaHistogram(test_driver, 'LoFi')
-      else:
-        self.assertPreviewShownViaHistogram(test_driver, 'LoFi')
-        self.assertPreviewNotShownViaHistogram(test_driver, 'LitePage')
-
   # Checks that the server does not provide a preview (neither Lite Page nor
   # fallback to LoFi) for a fast connection.
   # Note: this test is for the CPAT protocol change in M-61.
