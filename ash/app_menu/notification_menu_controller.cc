@@ -77,8 +77,7 @@ void NotificationMenuController::OnNotificationRemoved(
 
   // There are no more notifications to show, so remove |item_| from
   // |root_menu_|, and remove the entry from the model.
-  const views::View* container = notification_menu_view_->parent();
-  root_menu_->RemoveMenuItemAt(root_menu_->GetSubmenu()->GetIndexOf(container));
+  root_menu_->RemoveMenuItem(notification_menu_view_->parent());
   app_menu_model_adapter_->model()->RemoveItemAt(
       app_menu_model_adapter_->model()->GetIndexOfCommandId(
           NOTIFICATION_CONTAINER));

@@ -410,7 +410,7 @@ void BookmarkMenuDelegate::WillRemoveBookmarks(
       // to delete an empty folder.
       if (parent) {
         changed_parent_menus.insert(parent);
-        parent->RemoveMenuItemAt(menu->parent()->GetIndexOf(menu));
+        parent->RemoveMenuItem(menu);
       }
       node_to_menu_map_.erase(node_to_menu);
       menu_id_to_node_map_.erase(menu->GetCommand());

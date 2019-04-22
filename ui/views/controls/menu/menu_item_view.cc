@@ -315,15 +315,11 @@ MenuItemView* MenuItemView::AddMenuItemAt(
   return item;
 }
 
-void MenuItemView::RemoveMenuItemAt(int index) {
-  DCHECK(submenu_);
-  DCHECK_GE(index, 0);
-  DCHECK_LT(size_t{index}, submenu_->children().size());
-
-  View* item = submenu_->child_at(index);
+void MenuItemView::RemoveMenuItem(View* item) {
   DCHECK(item);
+  DCHECK(submenu_);
+  DCHECK_EQ(submenu_, item->parent());
   removed_items_.push_back(item);
-
   submenu_->RemoveChildView(item);
 }
 

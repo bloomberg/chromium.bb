@@ -23,6 +23,23 @@
 
 namespace views {
 
+TEST(MenuItemViewUnitTest, AddAndRemoveChildren) {
+  views::TestMenuItemView root_menu;
+  root_menu.set_owned_by_client();
+
+  auto* item = root_menu.AppendMenuItemWithLabel(0, base::string16());
+
+  views::SubmenuView* submenu = root_menu.GetSubmenu();
+  ASSERT_TRUE(submenu);
+  const auto menu_items = submenu->GetMenuItems();
+  ASSERT_EQ(1u, menu_items.size());
+  EXPECT_EQ(item, menu_items.front());
+
+  root_menu.RemoveMenuItem(item);
+
+  EXPECT_TRUE(submenu->GetMenuItems().empty());
+}
+
 namespace {
 
 // A simple View class that will match its height to the available width.
