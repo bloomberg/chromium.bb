@@ -16,6 +16,8 @@ namespace device_sync {
 
 namespace {
 
+const char kDeviceSyncBetterTogetherGroupKeyName[] =
+    "DeviceSyncBetterTogetherGroupKey";
 const char kBundleNameDictKey[] = "name";
 const char kKeyListDictKey[] = "keys";
 const char kKeyDirectiveDictKey[] = "key_directive";
@@ -51,6 +53,16 @@ const base::flat_set<CryptAuthKeyBundle::Name>& CryptAuthKeyBundle::AllNames() {
   static const base::NoDestructor<base::flat_set<CryptAuthKeyBundle::Name>>
       name_list({CryptAuthKeyBundle::Name::kUserKeyPair,
                  CryptAuthKeyBundle::Name::kLegacyMasterKey,
+                 CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether,
+                 CryptAuthKeyBundle::Name::kDeviceSyncBetterTogetherGroupKey});
+  return *name_list;
+}
+
+const base::flat_set<CryptAuthKeyBundle::Name>&
+CryptAuthKeyBundle::AllEnrollableNames() {
+  static const base::NoDestructor<base::flat_set<CryptAuthKeyBundle::Name>>
+      name_list({CryptAuthKeyBundle::Name::kUserKeyPair,
+                 CryptAuthKeyBundle::Name::kLegacyMasterKey,
                  CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether});
   return *name_list;
 }
@@ -65,6 +77,8 @@ std::string CryptAuthKeyBundle::KeyBundleNameEnumToString(
       return kCryptAuthLegacyMasterKeyName;
     case CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether:
       return kCryptAuthDeviceSyncBetterTogetherKeyName;
+    case CryptAuthKeyBundle::Name::kDeviceSyncBetterTogetherGroupKey:
+      return kDeviceSyncBetterTogetherGroupKeyName;
   }
 }
 
@@ -77,6 +91,8 @@ CryptAuthKeyBundle::KeyBundleNameStringToEnum(const std::string& name) {
     return CryptAuthKeyBundle::Name::kLegacyMasterKey;
   if (name == kCryptAuthDeviceSyncBetterTogetherKeyName)
     return CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether;
+  if (name == kDeviceSyncBetterTogetherGroupKeyName)
+    return CryptAuthKeyBundle::Name::kDeviceSyncBetterTogetherGroupKey;
 
   return base::nullopt;
 }

@@ -60,7 +60,7 @@ CryptAuthKeyRegistryImpl::CryptAuthKeyRegistryImpl(PrefService* pref_service)
     base::Optional<CryptAuthKeyBundle> bundle =
         CryptAuthKeyBundle::FromDictionary(*bundle_dict);
     DCHECK(bundle);
-    enrolled_key_bundles_.insert_or_assign(name, *bundle);
+    key_bundles_.insert_or_assign(name, *bundle);
   }
 }
 
@@ -72,7 +72,7 @@ void CryptAuthKeyRegistryImpl::OnKeyRegistryUpdated() {
 
 base::Value CryptAuthKeyRegistryImpl::AsDictionary() const {
   base::Value dict(base::Value::Type::DICTIONARY);
-  for (const auto& name_bundle_pair : enrolled_key_bundles_) {
+  for (const auto& name_bundle_pair : key_bundles_) {
     dict.SetKey(
         CryptAuthKeyBundle::KeyBundleNameEnumToString(name_bundle_pair.first),
         name_bundle_pair.second.AsDictionary());

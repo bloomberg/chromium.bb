@@ -127,7 +127,7 @@ const std::vector<CryptAuthKeyBundle::Name>& GetKeyBundleOrder() {
       [] {
         std::vector<CryptAuthKeyBundle::Name> order;
         for (const CryptAuthKeyBundle::Name& bundle_name :
-             CryptAuthKeyBundle::AllNames()) {
+             CryptAuthKeyBundle::AllEnrollableNames()) {
           order.push_back(bundle_name);
         }
         return order;
@@ -745,7 +745,7 @@ void CryptAuthV2EnrollerImpl::OnEnrollKeysSuccess(
 
   for (const std::pair<CryptAuthKeyBundle::Name, CryptAuthKey>& new_key :
        new_keys) {
-    key_registry_->AddEnrolledKey(new_key.first, new_key.second);
+    key_registry_->AddKey(new_key.first, new_key.second);
   }
 
   for (const std::pair<CryptAuthKeyBundle::Name, cryptauthv2::KeyDirective>&

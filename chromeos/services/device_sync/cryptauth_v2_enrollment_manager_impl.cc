@@ -565,7 +565,7 @@ void CryptAuthV2EnrollmentManagerImpl::AddV1UserKeyPairToRegistryIfNecessary() {
     return;
   }
 
-  key_registry_->AddEnrolledKey(
+  key_registry_->AddKey(
       CryptAuthKeyBundle::Name::kUserKeyPair,
       CryptAuthKey(public_key_v1, private_key_v1, CryptAuthKey::Status::kActive,
                    cryptauthv2::KeyType::P256,

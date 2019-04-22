@@ -18,8 +18,8 @@ namespace device_sync {
 
 // Implementation of CryptAuthKeyRegistry that persists the key-bundle map as a
 // preference. The in-memory key bundle map is populated with these persisted
-// enrolled key bundles on construction, and the preference is updated whenever
-// the in-memory key bundle map changes.
+// key bundles on construction, and the preference is updated whenever the
+// in-memory key bundle map changes.
 class CryptAuthKeyRegistryImpl : public CryptAuthKeyRegistry {
  public:
   class Factory {
@@ -40,8 +40,8 @@ class CryptAuthKeyRegistryImpl : public CryptAuthKeyRegistry {
   ~CryptAuthKeyRegistryImpl() override;
 
  private:
-  // Populates the in-memory key bundle map with the enrolled key bundles
-  // persisted in a pref.
+  // Populates the in-memory key bundle map with the key bundles persisted in a
+  // pref.
   explicit CryptAuthKeyRegistryImpl(PrefService* pref_service);
 
   // CryptAuthKeyRegistry:

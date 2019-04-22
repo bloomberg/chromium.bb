@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromeos/services/device_sync/cryptauth_key_bundle.h"
+
 #include "chromeos/services/device_sync/cryptauth_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

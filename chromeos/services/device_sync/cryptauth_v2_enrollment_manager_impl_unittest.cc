@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromeos/services/device_sync/cryptauth_v2_enrollment_manager_impl.h"
+
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -24,7 +26,6 @@
 #include "chromeos/services/device_sync/cryptauth_key_registry_impl.h"
 #include "chromeos/services/device_sync/cryptauth_v2_enroller.h"
 #include "chromeos/services/device_sync/cryptauth_v2_enroller_impl.h"
-#include "chromeos/services/device_sync/cryptauth_v2_enrollment_manager_impl.h"
 #include "chromeos/services/device_sync/fake_cryptauth_enrollment_scheduler.h"
 #include "chromeos/services/device_sync/fake_cryptauth_gcm_manager.h"
 #include "chromeos/services/device_sync/fake_cryptauth_v2_enroller.h"
@@ -525,7 +526,7 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
   EXPECT_TRUE(fake_enrollment_scheduler());
 
   // The user has never enrolled with v1 or v2 and has not registered with GCM.
-  EXPECT_TRUE(key_registry()->enrolled_key_bundles().empty());
+  EXPECT_TRUE(key_registry()->key_bundles().empty());
   EXPECT_TRUE(enrollment_manager()->GetLastEnrollmentTime().is_null());
   EXPECT_FALSE(enrollment_manager()->IsEnrollmentValid());
 
@@ -747,8 +748,8 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
   CryptAuthKey user_key_pair_v2(
       kFakeV2PublicKey, kFakeV2PrivateKey, CryptAuthKey::Status::kActive,
       cryptauthv2::KeyType::P256, kCryptAuthFixedUserKeyPairHandle);
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
-                                 user_key_pair_v2);
+  key_registry()->AddKey(CryptAuthKeyBundle::Name::kUserKeyPair,
+                         user_key_pair_v2);
   EXPECT_EQ(user_key_pair_v2, *key_registry()->GetActiveKey(
                                   CryptAuthKeyBundle::Name::kUserKeyPair));
 
@@ -770,7 +771,7 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest, GetUserKeyPair) {
   EXPECT_TRUE(enrollment_manager()->GetUserPublicKey().empty());
   EXPECT_TRUE(enrollment_manager()->GetUserPrivateKey().empty());
 
-  key_registry()->AddEnrolledKey(
+  key_registry()->AddKey(
       CryptAuthKeyBundle::Name::kUserKeyPair,
       CryptAuthKey(kFakeV2PublicKey, kFakeV2PrivateKey,
                    CryptAuthKey::Status::kActive, cryptauthv2::KeyType::P256,
