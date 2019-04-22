@@ -4,17 +4,21 @@
 
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
+import("//testing/test.gni")
+
 # This code is the Mojo controller, so it lives in the same process as the D-Bus
 # client.
 component("controller") {
   output_name = "chromeos_power_mojo_controller"
   defines = [ "IS_CHROMEOS_POWER_MOJO_CONTROLLER_IMPL" ]
 
+  public_deps = [
+    "//chromeos/dbus/power:power_manager_proto",
+    "//chromeos/services/power/public/mojom",
+  ]
   deps = [
     "//base",
     "//chromeos/dbus/power",
-    "//chromeos/dbus/power:power_manager_proto",
-    "//chromeos/services/power/public/mojom",
   ]
   sources = [
     "power_manager_mojo_controller.cc",
@@ -28,15 +32,32 @@ component("client") {
   output_name = "chromeos_power_mojo_client"
   defines = [ "IS_CHROMEOS_POWER_MOJO_CLIENT_IMPL" ]
 
+  public_deps = [
+    "//chromeos/dbus/power:power_manager_proto",
+    "//chromeos/services/power/public/mojom",
+  ]
   deps = [
     "//base",
     "//chromeos/constants",
     "//chromeos/dbus/power",
-    "//chromeos/dbus/power:power_manager_proto",
-    "//chromeos/services/power/public/mojom",
   ]
   sources = [
     "power_manager_mojo_client.cc",
     "power_manager_mojo_client.h",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  deps = [
+    ":client",
+    ":controller",
+    "//base/test:test_support",
+    "//chromeos/constants",
+    "//chromeos/dbus/power",
+    "//testing/gtest",
+  ]
+  sources = [
+    "power_manager_mojo_controller_unittest.cc",
   ]
 }
