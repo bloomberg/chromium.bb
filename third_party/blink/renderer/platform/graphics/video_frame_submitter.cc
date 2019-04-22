@@ -490,6 +490,10 @@ viz::CompositorFrame VideoFrameSubmitter::CreateCompositorFrame(
   viz::CompositorFrame compositor_frame;
   compositor_frame.metadata.begin_frame_ack = begin_frame_ack;
   compositor_frame.metadata.frame_token = ++next_frame_token_;
+  compositor_frame.metadata.preferred_frame_interval =
+      video_frame_provider_
+          ? video_frame_provider_->GetPreferredRenderInterval()
+          : viz::BeginFrameArgs::MinInterval();
 
   base::TimeTicks value;
   if (video_frame && video_frame->metadata()->GetTimeTicks(

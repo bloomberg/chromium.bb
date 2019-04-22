@@ -84,6 +84,7 @@ class MEDIA_EXPORT VideoRendererImpl
                                    base::TimeTicks deadline_max,
                                    bool background_rendering) override;
   void OnFrameDropped() override;
+  base::TimeDelta GetPreferredRenderInterval() override;
 
  private:
   // Callback for |video_decoder_stream_| initialization.

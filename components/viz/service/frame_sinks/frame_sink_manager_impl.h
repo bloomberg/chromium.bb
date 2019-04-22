@@ -197,6 +197,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   const CompositorFrameSinkSupport* GetFrameSinkForId(
       const FrameSinkId& frame_sink_id) const;
 
+  void SetPreferredFrameIntervalForFrameSinkId(const FrameSinkId& id,
+                                               base::TimeDelta interval);
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
       const FrameSinkId& id) const;
 

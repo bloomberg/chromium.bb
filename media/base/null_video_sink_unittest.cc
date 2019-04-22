@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "media/base/gmock_callback_support.h"
 #include "media/base/null_video_sink.h"
 #include "media/base/test_helpers.h"
@@ -45,6 +46,9 @@ class NullVideoSinkTest : public testing::Test,
     return VideoFrame::CreateFrame(PIXEL_FORMAT_I420, natural_size,
                                    gfx::Rect(natural_size), natural_size,
                                    timestamp);
+  }
+  base::TimeDelta GetPreferredRenderInterval() override {
+    return viz::BeginFrameArgs::MinInterval();
   }
 
   // VideoRendererSink::RenderCallback implementation.

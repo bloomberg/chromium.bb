@@ -328,6 +328,11 @@ void VideoRendererImpl::OnFrameDropped() {
   algorithm_->OnLastFrameDropped();
 }
 
+base::TimeDelta VideoRendererImpl::GetPreferredRenderInterval() {
+  base::AutoLock auto_lock(lock_);
+  return algorithm_->average_frame_duration();
+}
+
 void VideoRendererImpl::OnVideoDecoderStreamInitialized(bool success) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);

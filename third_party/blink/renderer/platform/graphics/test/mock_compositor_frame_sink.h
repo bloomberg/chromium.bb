@@ -52,6 +52,7 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
                void(mojo::ScopedSharedBufferHandle,
                     gpu::mojom::blink::MailboxPtr));
   MOCK_METHOD1(DidDeleteSharedBitmap, void(gpu::mojom::blink::MailboxPtr));
+  MOCK_METHOD1(SetPreferredFrameInterval, void(base::TimeDelta));
 
  private:
   mojo::Binding<viz::mojom::blink::CompositorFrameSink> binding_;

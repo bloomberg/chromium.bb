@@ -25,6 +25,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/android/window_android.h"
 #include "url/gurl.h"
@@ -46,23 +47,30 @@ class CompositorImplBrowserTest
   CompositorImplBrowserTest() {}
 
   void SetUp() override {
+    std::vector<base::Feature> features;
+
     switch (GetParam()) {
       case CompositorImplMode::kNormal:
         break;
       case CompositorImplMode::kViz:
-        scoped_feature_list_.InitAndEnableFeature(
-            features::kVizDisplayCompositor);
+        features =
+            std::vector<base::Feature>({features::kVizDisplayCompositor});
         break;
       case CompositorImplMode::kVizSkDDL:
-        scoped_feature_list_.InitWithFeatures(
+        features = std::vector<base::Feature>(
             {features::kVizDisplayCompositor, features::kUseSkiaRenderer,
-             features::kDefaultEnableOopRasterization},
-            {});
+             features::kDefaultEnableOopRasterization});
         break;
     }
 
+    AppendFeatures(&features);
+    scoped_feature_list_.InitWithFeatures(features, {});
+
     ContentBrowserTest::SetUp();
   }
+
+  virtual std::string GetTestUrl() { return "/title1.html"; }
+  virtual void AppendFeatures(std::vector<base::Feature>* features) {}
 
  protected:
   void SetUpOnMainThread() override {
@@ -70,7 +78,7 @@ class CompositorImplBrowserTest
     net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
     https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(https_server.Start());
-    GURL http_url(embedded_test_server()->GetURL("/title1.html"));
+    GURL http_url(embedded_test_server()->GetURL(GetTestUrl()));
     ASSERT_TRUE(NavigateToURL(shell(), http_url));
   }
 
@@ -91,7 +99,6 @@ class CompositorImplBrowserTest
         web_contents()->GetRenderWidgetHostView());
   }
 
- private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorImplBrowserTest);
@@ -266,6 +273,41 @@ IN_PROC_BROWSER_TEST_P(CompositorImplBrowserTest,
   }
   CompositorSwapRunLoop(compositor_impl()).RunUntilSwap();
 }
+
+class CompositorImplBrowserTestRefreshRate
+    : public CompositorImplBrowserTest,
+      public ui::WindowAndroid::TestHooks {
+ public:
+  std::string GetTestUrl() override { return "/media/tulip2.webm"; }
+  void AppendFeatures(std::vector<base::Feature>* features) override {
+    features->push_back(media::kUseSurfaceLayerForVideo);
+  }
+
+  // WindowAndroid::TestHooks impl.
+  std::vector<float> GetSupportedRates() override {
+    return {120.f, 90.f, 60.f};
+  }
+  void SetPreferredRate(float refresh_rate) override {
+    if (fabs(refresh_rate - expected_refresh_rate_) < 2.f)
+      run_loop_->Quit();
+  }
+
+  float expected_refresh_rate_ = 0.f;
+  std::unique_ptr<base::RunLoop> run_loop_;
+};
+
+IN_PROC_BROWSER_TEST_P(CompositorImplBrowserTestRefreshRate, VideoPreference) {
+  window()->SetTestHooks(this);
+  expected_refresh_rate_ = 60.f;
+  run_loop_ = std::make_unique<base::RunLoop>();
+  run_loop_->Run();
+  run_loop_.reset();
+  window()->SetTestHooks(nullptr);
+}
+
+INSTANTIATE_TEST_SUITE_P(P,
+                         CompositorImplBrowserTestRefreshRate,
+                         ::testing::Values(CompositorImplMode::kViz));
 
 }  // namespace
 }  // namespace content

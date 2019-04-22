@@ -43,5 +43,8 @@ specific_include_rules = {
   ],
   "gpu_memory_buffer_video_frame_pool_unittest.cc": [
     "+components/viz/test/test_context_provider.h",
+  ],
+  "null_video_sink_unittest.cc": [
+    "+components/viz/common/frame_sinks/begin_frame_args.h",
   ]
 }

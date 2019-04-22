@@ -148,6 +148,8 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   // was allocated.
   base::TimeTicks local_surface_id_allocation_time;
 
+  base::Optional<base::TimeDelta> preferred_frame_interval;
+
 #if defined(OS_ANDROID)
   float max_page_scale_factor = 0.f;
   gfx::SizeF root_layer_size;

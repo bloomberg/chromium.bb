@@ -885,6 +885,9 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
   // the previous call, the total should be 4 * 115200.
   EXPECT_EQ(115200, last_pipeline_statistics.video_memory_usage);
 
+  EXPECT_EQ(renderer_->GetPreferredRenderInterval(),
+            last_pipeline_statistics.video_frame_duration_average);
+
   // Consider the case that rendering is faster than we setup the test event.
   // In that case, when we run out of the frames, BUFFERING_HAVE_NOTHING will
   // be called. And then during SatisfyPendingDecodeWithEndOfStream,

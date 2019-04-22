@@ -583,6 +583,14 @@ const CompositorFrameSinkSupport* FrameSinkManagerImpl::GetFrameSinkForId(
   return nullptr;
 }
 
+void FrameSinkManagerImpl::SetPreferredFrameIntervalForFrameSinkId(
+    const FrameSinkId& id,
+    base::TimeDelta interval) {
+  auto it = frame_sink_data_.find(id);
+  DCHECK(it != frame_sink_data_.end());
+  it->second.preferred_frame_interval = interval;
+}
+
 base::TimeDelta FrameSinkManagerImpl::GetPreferredFrameIntervalForFrameSinkId(
     const FrameSinkId& id) const {
   auto it = frame_sink_data_.find(id);

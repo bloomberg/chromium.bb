@@ -281,6 +281,9 @@ float WindowAndroid::GetRefreshRate() {
 }
 
 std::vector<float> WindowAndroid::GetSupportedRefreshRates() {
+  if (test_hooks_)
+    return test_hooks_->GetSupportedRates();
+
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jfloatArray> j_supported_refresh_rates =
       Java_WindowAndroid_getSupportedRefreshRates(env, GetJavaObject());
@@ -295,6 +298,11 @@ std::vector<float> WindowAndroid::GetSupportedRefreshRates() {
 void WindowAndroid::SetPreferredRefreshRate(float refresh_rate) {
   if (force_60hz_refresh_rate_)
     return;
+
+  if (test_hooks_) {
+    test_hooks_->SetPreferredRate(refresh_rate);
+    return;
+  }
 
   JNIEnv* env = AttachCurrentThread();
   Java_WindowAndroid_setPreferredRefreshRate(env, GetJavaObject(),
@@ -459,6 +467,17 @@ display::Display WindowAndroid::GetDisplayWithWindowColorSpace() {
       display.RotationAsDegree(), display.color_depth(),
       display.depth_per_component(), window_is_wide_color_gamut_);
   return display;
+}
+
+void WindowAndroid::SetTestHooks(TestHooks* hooks) {
+  test_hooks_ = hooks;
+  if (!test_hooks_)
+    return;
+
+  if (compositor_) {
+    compositor_->OnUpdateSupportedRefreshRates(
+        test_hooks_->GetSupportedRates());
+  }
 }
 
 // ----------------------------------------------------------------------------

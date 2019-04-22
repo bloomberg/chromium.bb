@@ -38,6 +38,10 @@ class MEDIA_EXPORT VideoRendererSink {
     // not actually rendered.  Must be called before the next Render() call.
     virtual void OnFrameDropped() = 0;
 
+    // Returns the interval at which the sink expects to have new frames for the
+    // client.
+    virtual base::TimeDelta GetPreferredRenderInterval() = 0;
+
     virtual ~RenderCallback() {}
   };
 

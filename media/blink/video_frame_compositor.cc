@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
@@ -174,6 +175,15 @@ bool VideoFrameCompositor::UpdateCurrentFrame(base::TimeTicks deadline_min,
 bool VideoFrameCompositor::HasCurrentFrame() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   return static_cast<bool>(GetCurrentFrame());
+}
+
+base::TimeDelta VideoFrameCompositor::GetPreferredRenderInterval() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  base::AutoLock lock(callback_lock_);
+
+  if (!callback_)
+    return viz::BeginFrameArgs::MinInterval();
+  return callback_->GetPreferredRenderInterval();
 }
 
 void VideoFrameCompositor::Start(RenderCallback* callback) {

@@ -57,7 +57,8 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
          data.ReadBeginFrameAck(&out->begin_frame_ack) &&
          data.ReadLocalSurfaceIdAllocationTime(
              &out->local_surface_id_allocation_time) &&
-         !out->local_surface_id_allocation_time.is_null();
+         !out->local_surface_id_allocation_time.is_null() &&
+         data.ReadPreferredFrameInterval(&out->preferred_frame_interval);
 }
 
 }  // namespace mojo

@@ -550,6 +550,7 @@ source_set("unit_tests") {
   ]
   deps = [
     "//base/test:test_support",
+    "//components/viz/common",
     "//gpu/command_buffer/common",
     "//media:test_support",
     "//skia",

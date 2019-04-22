@@ -417,6 +417,11 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
     }
   }
 
+  if (frame.metadata.preferred_frame_interval) {
+    frame_sink_manager_->SetPreferredFrameIntervalForFrameSinkId(
+        frame_sink_id_, *frame.metadata.preferred_frame_interval);
+  }
+
   Surface* prev_surface =
       surface_manager_->GetSurfaceForId(last_created_surface_id_);
   Surface* current_surface = nullptr;

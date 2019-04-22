@@ -79,6 +79,7 @@ component("blink") {
   deps = [
     "//base",
     "//cc",
+    "//components/viz/common",
     "//gpu",
     "//media",
     "//media:shared_memory_support",

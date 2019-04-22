@@ -402,6 +402,11 @@ void WebMediaPlayerMSCompositor::PutCurrentFrame() {
   current_frame_rendered_ = true;
 }
 
+base::TimeDelta WebMediaPlayerMSCompositor::GetPreferredRenderInterval() {
+  DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
+  return viz::BeginFrameArgs::MinInterval();
+}
+
 void WebMediaPlayerMSCompositor::StartRendering() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   {
