@@ -1062,15 +1062,18 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
     OnFrameMetadataUpdated(metadata.Clone(), false);
   }
 
-  if (host() && metadata.frame_token)
-    host()->DidProcessFrame(metadata.frame_token);
-
   // DevTools ScreenCast support for Android WebView.
   RenderFrameHost* frame_host = RenderViewHost::From(host())->GetMainFrame();
   if (frame_host) {
     RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
         frame_host, std::move(metadata));
   }
+}
+
+void RenderWidgetHostViewAndroid::FrameTokenChangedForSynchronousCompositor(
+    uint32_t frame_token) {
+  if (host() && frame_token)
+    host()->DidProcessFrame(frame_token);
 }
 
 void RenderWidgetHostViewAndroid::SetSynchronousCompositorClient(

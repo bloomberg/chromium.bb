@@ -304,6 +304,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                                 int end_adjust);
 
   void SynchronousFrameMetadata(viz::CompositorFrameMetadata frame_metadata);
+  void FrameTokenChangedForSynchronousCompositor(uint32_t frame_token);
 
   void SetSynchronousCompositorClient(SynchronousCompositorClient* client);
 

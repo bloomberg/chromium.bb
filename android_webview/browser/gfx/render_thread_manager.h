@@ -40,7 +40,8 @@ class RenderThreadManager : public CompositorFrameConsumer {
   void TakeParentDrawDataOnUI(
       ParentCompositorDrawConstraints* constraints,
       CompositorID* compositor_id,
-      viz::PresentationFeedbackMap* presentation_feedbacks) override;
+      viz::PresentationFeedbackMap* presentation_feedbacks,
+      uint32_t* frame_token) override;
   ChildFrameQueue PassUncommittedFrameOnUI() override;
 
   void RemoveFromCompositorFrameProducerOnUI();
@@ -51,7 +52,8 @@ class RenderThreadManager : public CompositorFrameConsumer {
   void PostParentDrawDataToChildCompositorOnRT(
       const ParentCompositorDrawConstraints& parent_draw_constraints,
       const CompositorID& compositor_id,
-      viz::PresentationFeedbackMap presentation_feedbacks);
+      viz::PresentationFeedbackMap presentation_feedbacks,
+      uint32_t frame_token);
   void InsertReturnedResourcesOnRT(
       const std::vector<viz::ReturnedResource>& resources,
       const CompositorID& compositor_id,
@@ -115,6 +117,7 @@ class RenderThreadManager : public CompositorFrameConsumer {
   ParentCompositorDrawConstraints parent_draw_constraints_;
   CompositorID compositor_id_for_presentation_feedbacks_;
   viz::PresentationFeedbackMap presentation_feedbacks_;
+  uint32_t presented_frame_token_ = 0u;
 
   base::WeakPtrFactory<RenderThreadManager> weak_factory_on_ui_thread_;
 

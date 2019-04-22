@@ -34,7 +34,8 @@ class CompositorFrameConsumer {
   virtual void TakeParentDrawDataOnUI(
       ParentCompositorDrawConstraints* constraints,
       CompositorID* compositor_id,
-      viz::PresentationFeedbackMap* presentation_feedbacks) = 0;
+      viz::PresentationFeedbackMap* presentation_feedbacks,
+      uint32_t* frame_token) = 0;
   virtual ChildFrameQueue PassUncommittedFrameOnUI() = 0;
 
  protected:
