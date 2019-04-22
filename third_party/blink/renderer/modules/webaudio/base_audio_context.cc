@@ -139,7 +139,8 @@ void BaseAudioContext::Initialize() {
     // only create the listener if the destination node exists.
     listener_ = MakeGarbageCollected<AudioListener>(*this);
 
-    Tracker()->DidCreateBaseAudioContext(this);
+    if (Tracker())
+      Tracker()->DidCreateBaseAudioContext(this);
   }
 }
 
@@ -175,7 +176,8 @@ void BaseAudioContext::Uninitialize() {
 
   Clear();
 
-  Tracker()->DidDestroyBaseAudioContext(this);
+  if (Tracker())
+    Tracker()->DidDestroyBaseAudioContext(this);
 
   DCHECK(!is_resolving_resume_promises_);
   DCHECK_EQ(resume_resolvers_.size(), 0u);
@@ -641,7 +643,8 @@ void BaseAudioContext::SetContextState(AudioContextState new_state) {
         ->PostTask(FROM_HERE, WTF::Bind(&BaseAudioContext::NotifyStateChange,
                                         WrapPersistent(this)));
 
-    Tracker()->DidChangeBaseAudioContext(this);
+    if (Tracker())
+      Tracker()->DidChangeBaseAudioContext(this);
   }
 }
 
