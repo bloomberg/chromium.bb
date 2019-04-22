@@ -69,6 +69,21 @@ class GaiaScreenHandler : public BaseScreenHandler,
                           public GaiaView,
                           public NetworkPortalDetector::Observer {
  public:
+  // The possible modes that the Gaia signin screen can be in.
+  enum GaiaScreenMode {
+    // Default Gaia authentication will be used.
+    GAIA_SCREEN_MODE_DEFAULT = 0,
+
+    // Gaia offline mode will be used.
+    GAIA_SCREEN_MODE_OFFLINE = 1,
+
+    // An interstitial page will be used before SAML redirection.
+    GAIA_SCREEN_MODE_SAML_INTERSTITIAL = 2,
+
+    // Offline UI for Active Directory authentication.
+    GAIA_SCREEN_MODE_AD = 3,
+  };
+
   enum FrameState {
     FRAME_STATE_UNKNOWN = 0,
     FRAME_STATE_LOADING,
@@ -91,6 +106,10 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void ShowSigninScreenForTest(const std::string& username,
                                const std::string& password,
                                const std::string& services) override;
+
+  // Returns true if offline login mode was either required, or reported by the
+  // WebUI (i.e. WebUI mignt not have completed transition to the new mode).
+  bool IsOfflineLoginActive() const;
 
  private:
   // TODO (xiaoyinh): remove this dependency.
@@ -267,10 +286,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
                          const std::string& id,
                          const AccountType& account_type) const;
 
-  bool offline_login_is_active() const { return offline_login_is_active_; }
-  void set_offline_login_is_active(bool offline_login_is_active) {
-    offline_login_is_active_ = offline_login_is_active;
-  }
+  // Records whether WebUI is currently in offline mode.
+  void SetOfflineLoginIsActive(bool is_active);
 
   // Current state of Gaia frame.
   FrameState frame_state_ = FRAME_STATE_UNKNOWN;
@@ -335,7 +352,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // signin_screen_handler directly.
   SigninScreenHandler* signin_screen_handler_ = nullptr;
 
-  // True if offline GAIA is active.
+  // True if WebUI is currently displaying offline GAIA.
   bool offline_login_is_active_ = false;
 
   // True if the authentication extension is still loading.
@@ -349,6 +366,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // client certificate discovery.
   std::unique_ptr<network::NSSTempCertsCacheChromeOS>
       untrusted_authority_certs_cache_;
+
+  // The type of Gaia page to show.
+  GaiaScreenMode screen_mode_ = GAIA_SCREEN_MODE_DEFAULT;
 
   base::WeakPtrFactory<GaiaScreenHandler> weak_factory_;
 

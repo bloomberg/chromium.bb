@@ -64,9 +64,13 @@ class DeviceSettingsProvider
       const enterprise_management::ChromeDeviceSettingsProto& policy,
       PrefValueMap* new_values_cache);
 
+  void DoSetForTesting(const std::string& path, const base::Value& value) {
+    DoSet(path, value);
+  }
+
  private:
   // TODO(https://crbug.com/433840): There are no longer any actual callers of
-  // DeviceSettingsProvider::DoSet, but it is still called in the unit test.
+  // DeviceSettingsProvider::DoSet, but it is still called in the tests.
   // Still TODO: remove the calls from the test, and remove the extra state
   // that this class will no longer need (ie, cached written values).
   void DoSet(const std::string& path, const base::Value& value);

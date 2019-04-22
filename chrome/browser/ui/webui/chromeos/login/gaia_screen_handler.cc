@@ -94,33 +94,19 @@ const char kEndpointGen[] = "1.0";
 const char kOAUTHCodeCookie[] = "oauth_code";
 const char kGAPSCookie[] = "GAPS";
 
-// The possible modes that the Gaia signin screen can be in.
-enum GaiaScreenMode {
-  // Default Gaia authentication will be used.
-  GAIA_SCREEN_MODE_DEFAULT = 0,
-
-  // Gaia offline mode will be used.
-  GAIA_SCREEN_MODE_OFFLINE = 1,
-
-  // An interstitial page will be used before SAML redirection.
-  GAIA_SCREEN_MODE_SAML_INTERSTITIAL = 2,
-
-  // Offline UI for Active Directory authentication.
-  GAIA_SCREEN_MODE_AD = 3,
-};
-
 policy::DeviceMode GetDeviceMode() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   return connector->GetDeviceMode();
 }
 
-GaiaScreenMode GetGaiaScreenMode(const std::string& email, bool use_offline) {
+GaiaScreenHandler::GaiaScreenMode GetGaiaScreenMode(const std::string& email,
+                                                    bool use_offline) {
   if (use_offline)
-    return GAIA_SCREEN_MODE_OFFLINE;
+    return GaiaScreenHandler::GAIA_SCREEN_MODE_OFFLINE;
 
   if (GetDeviceMode() == policy::DEVICE_MODE_ENTERPRISE_AD)
-    return GAIA_SCREEN_MODE_AD;
+    return GaiaScreenHandler::GAIA_SCREEN_MODE_AD;
 
   int authentication_behavior = 0;
   CrosSettings::Get()->GetInteger(kLoginAuthenticationBehavior,
@@ -128,7 +114,7 @@ GaiaScreenMode GetGaiaScreenMode(const std::string& email, bool use_offline) {
   if (authentication_behavior ==
       em::LoginAuthenticationBehaviorProto::SAML_INTERSTITIAL) {
     if (email.empty())
-      return GAIA_SCREEN_MODE_SAML_INTERSTITIAL;
+      return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_INTERSTITIAL;
 
     // If there's a populated email, we must check first that this user is using
     // SAML in order to decide whether to show the interstitial page.
@@ -137,10 +123,10 @@ GaiaScreenMode GetGaiaScreenMode(const std::string& email, bool use_offline) {
                                                AccountType::UNKNOWN));
 
     if (user && user->using_saml())
-      return GAIA_SCREEN_MODE_SAML_INTERSTITIAL;
+      return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_INTERSTITIAL;
   }
 
-  return GAIA_SCREEN_MODE_DEFAULT;
+  return GaiaScreenHandler::GAIA_SCREEN_MODE_DEFAULT;
 }
 
 std::string GetEnterpriseDisplayDomain() {
@@ -409,14 +395,13 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
 
   UpdateAuthParams(&params, IsRestrictiveProxy());
 
-  GaiaScreenMode screen_mode = GetGaiaScreenMode(context.email,
-                                                 context.use_offline);
-  params.SetInteger("screenMode", screen_mode);
+  screen_mode_ = GetGaiaScreenMode(context.email, context.use_offline);
+  params.SetInteger("screenMode", screen_mode_);
 
-  if (screen_mode == GAIA_SCREEN_MODE_AD && !authpolicy_login_helper_)
+  if (screen_mode_ == GAIA_SCREEN_MODE_AD && !authpolicy_login_helper_)
     authpolicy_login_helper_ = std::make_unique<AuthPolicyHelper>();
 
-  if (screen_mode != GAIA_SCREEN_MODE_OFFLINE) {
+  if (screen_mode_ != GAIA_SCREEN_MODE_OFFLINE) {
     const std::string app_locale = g_browser_process->GetApplicationLocale();
     if (!app_locale.empty())
       params.SetString("hl", app_locale);
@@ -603,7 +588,7 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("loginWebuiReady", &GaiaScreenHandler::HandleGaiaUIReady);
   AddCallback("identifierEntered", &GaiaScreenHandler::HandleIdentifierEntered);
   AddCallback("updateOfflineLogin",
-              &GaiaScreenHandler::set_offline_login_is_active);
+              &GaiaScreenHandler::SetOfflineLoginIsActive);
   AddCallback("authExtensionLoaded",
               &GaiaScreenHandler::HandleAuthExtensionLoaded);
   AddCallback("completeAdAuthentication",
@@ -639,7 +624,7 @@ void GaiaScreenHandler::OnPortalDetectionCompleted(
   const NetworkPortalDetector::CaptivePortalStatus previous_status =
       captive_portal_status_;
   captive_portal_status_ = state.status;
-  if (offline_login_is_active() ||
+  if (IsOfflineLoginActive() ||
       IsOnline(captive_portal_status_) == IsOnline(previous_status) ||
       disable_restrictive_proxy_check_for_test_ ||
       GetCurrentScreen() != kScreenId)
@@ -1151,6 +1136,10 @@ void GaiaScreenHandler::ShowSigninScreenForTest(const std::string& username,
   }
 }
 
+bool GaiaScreenHandler::IsOfflineLoginActive() const {
+  return (screen_mode_ == GAIA_SCREEN_MODE_OFFLINE) || offline_login_is_active_;
+}
+
 void GaiaScreenHandler::CancelShowGaiaAsync() {
   show_when_ready_ = false;
 }
@@ -1296,6 +1285,10 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
   populated_email_.clear();
 
   LoadGaia(context);
+}
+
+void GaiaScreenHandler::SetOfflineLoginIsActive(bool is_active) {
+  offline_login_is_active_ = is_active;
 }
 
 void GaiaScreenHandler::UpdateState(NetworkError::ErrorReason reason) {

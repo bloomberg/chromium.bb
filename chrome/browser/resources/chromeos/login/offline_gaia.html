@@ -65,7 +65,7 @@
                   [[i18nDynamic(locale, 'enterpriseInfoMessage', domain)]]
               </div>
             </div>
-            <gaia-input-form on-submit="onEmailSubmitted_"
+            <gaia-input-form id="email-input-form" on-submit="onEmailSubmitted_"
                 disabled="[[disabled]]"
                 button-text="[[i18nDynamic(locale, 'offlineLoginNextBtn')]]">
               <gaia-input slot="inputs" id="emailInput" type="email" required
@@ -85,7 +85,7 @@
             </div>
             <div id="subtitle-container">
             </div>
-            <gaia-input-form disabled="[[disabled]]"
+            <gaia-input-form id="password-input-form" disabled="[[disabled]]"
                 on-submit="onPasswordSubmitted_"
                 button-text="[[i18nDynamic(locale, 'offlineLoginNextBtn')]]">
               <gaia-input slot="inputs" id="passwordInput" type="password"

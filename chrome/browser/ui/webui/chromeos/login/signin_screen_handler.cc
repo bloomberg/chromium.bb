@@ -650,7 +650,7 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
       FrameError() != net::OK && FrameError() != net::ERR_NETWORK_CHANGED;
   const bool is_gaia_signin = IsGaiaVisible() || IsGaiaHiddenByError();
   const bool offline_login_active =
-      gaia_screen_handler_->offline_login_is_active();
+      gaia_screen_handler_->IsOfflineLoginActive();
   const bool error_screen_should_overlay =
       !offline_login_active && IsGaiaVisible();
   const bool from_not_online_to_online_transition =
