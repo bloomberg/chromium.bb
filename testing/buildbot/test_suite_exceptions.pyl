@@ -654,6 +654,9 @@
     'remove_from': [
       # chromium.clang
       'CrWinAsan(dll)', # https://crbug.com/935598
+      # chromium.fyi
+      # Not eough disk space in the VMs, crbug.com/913153
+      'chromeos-vm-code-coverage',
     ],
     'modifications': {
       # chromium.clang
