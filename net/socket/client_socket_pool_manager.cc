@@ -95,7 +95,8 @@ ClientSocketPool::GroupId CreateGroupId(
 scoped_refptr<ClientSocketPool::SocketParams> CreateSocketParams(
     bool using_ssl,
     const HostPortPair& endpoint,
-    const ProxyInfo& proxy_info,
+    const ProxyServer& proxy_server,
+    MutableNetworkTrafficAnnotationTag proxy_annotation_tag,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     bool force_tunnel,
@@ -104,15 +105,15 @@ scoped_refptr<ClientSocketPool::SocketParams> CreateSocketParams(
   scoped_refptr<HttpProxySocketParams> http_proxy_params;
   scoped_refptr<SOCKSSocketParams> socks_params;
 
-  if (!proxy_info.is_direct()) {
-    ProxyServer proxy_server = proxy_info.proxy_server();
+  if (!proxy_server.is_direct()) {
     scoped_refptr<TransportSocketParams> proxy_tcp_params =
         base::MakeRefCounted<TransportSocketParams>(
             proxy_server.host_port_pair(), resolution_callback);
 
-    if (proxy_info.is_http() || proxy_info.is_https() || proxy_info.is_quic()) {
+    if (proxy_server.is_http() || proxy_server.is_https() ||
+        proxy_server.is_quic()) {
       scoped_refptr<SSLSocketParams> ssl_params;
-      if (!proxy_info.is_http()) {
+      if (!proxy_server.is_http()) {
         // Set ssl_params, and unset proxy_tcp_params
         ssl_params = base::MakeRefCounted<SSLSocketParams>(
             std::move(proxy_tcp_params), nullptr, nullptr,
@@ -123,22 +124,22 @@ scoped_refptr<ClientSocketPool::SocketParams> CreateSocketParams(
 
       http_proxy_params = base::MakeRefCounted<HttpProxySocketParams>(
           std::move(proxy_tcp_params), std::move(ssl_params),
-          proxy_info.is_quic(), endpoint, proxy_server.is_trusted_proxy(),
+          proxy_server.is_quic(), endpoint, proxy_server.is_trusted_proxy(),
           force_tunnel || using_ssl,
-          NetworkTrafficAnnotationTag(proxy_info.traffic_annotation()));
+          NetworkTrafficAnnotationTag(proxy_annotation_tag));
     } else {
-      DCHECK(proxy_info.is_socks());
+      DCHECK(proxy_server.is_socks());
       socks_params = base::MakeRefCounted<SOCKSSocketParams>(
           std::move(proxy_tcp_params),
           proxy_server.scheme() == ProxyServer::SCHEME_SOCKS5, endpoint,
-          NetworkTrafficAnnotationTag(proxy_info.traffic_annotation()));
+          NetworkTrafficAnnotationTag(proxy_annotation_tag));
     }
   }
 
   // Deal with SSL - which layers on top of any given proxy.
   if (using_ssl) {
     scoped_refptr<TransportSocketParams> ssl_tcp_params;
-    if (proxy_info.is_direct()) {
+    if (proxy_server.is_direct()) {
       ssl_tcp_params = base::MakeRefCounted<TransportSocketParams>(
           endpoint, resolution_callback);
     }
@@ -151,17 +152,17 @@ scoped_refptr<ClientSocketPool::SocketParams> CreateSocketParams(
         std::move(ssl_params));
   }
 
-  if (proxy_info.is_http() || proxy_info.is_https()) {
+  if (proxy_server.is_http() || proxy_server.is_https()) {
     return ClientSocketPool::SocketParams::CreateFromHttpProxySocketParams(
         std::move(http_proxy_params));
   }
 
-  if (proxy_info.is_socks()) {
+  if (proxy_server.is_socks()) {
     return ClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
         std::move(socks_params));
   }
 
-  DCHECK(proxy_info.is_direct());
+  DCHECK(proxy_server.is_direct());
   scoped_refptr<TransportSocketParams> tcp_params =
       base::MakeRefCounted<TransportSocketParams>(endpoint,
                                                   resolution_callback);
@@ -177,7 +178,9 @@ scoped_refptr<ClientSocketPool::SocketParams> CreateSocketParams(
 scoped_refptr<ClientSocketPool::SocketParams> CreateSocketParamsForGroup(
     const ClientSocketPool::GroupId& group_id,
     // This argument should be removed.
-    const ProxyInfo& proxy_info,
+    const ProxyServer& proxy_server,
+    // This argument should be removed.
+    MutableNetworkTrafficAnnotationTag proxy_annotation_tag,
     // This argument should be removed.
     const SSLConfig& ssl_config_for_origin,
     // This argument should be removed.
@@ -191,10 +194,10 @@ scoped_refptr<ClientSocketPool::SocketParams> CreateSocketParamsForGroup(
        group_id.socket_type() ==
            ClientSocketPool::SocketType::kSslVersionInterferenceProbe);
   bool force_tunnel = is_for_websockets;
-  return CreateSocketParams(using_ssl, group_id.destination(), proxy_info,
-                            ssl_config_for_origin, ssl_config_for_proxy,
-                            force_tunnel, group_id.privacy_mode(),
-                            resolution_callback);
+  return CreateSocketParams(using_ssl, group_id.destination(), proxy_server,
+                            proxy_annotation_tag, ssl_config_for_origin,
+                            ssl_config_for_proxy, force_tunnel,
+                            group_id.privacy_mode(), resolution_callback);
 }
 
 int InitSocketPoolHelper(
@@ -229,7 +232,8 @@ int InitSocketPoolHelper(
       CreateGroupId(group_type, origin_host_port, proxy_info,
                     ssl_config_for_origin, privacy_mode);
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
-      CreateSocketParamsForGroup(connection_group, proxy_info,
+      CreateSocketParamsForGroup(connection_group, proxy_info.proxy_server(),
+                                 proxy_info.traffic_annotation(),
                                  ssl_config_for_origin, ssl_config_for_proxy,
                                  is_for_websockets, resolution_callback);
 
@@ -393,9 +397,10 @@ NET_EXPORT std::unique_ptr<ConnectJob> CreateConnectJobForRawConnect(
   DCHECK(!proxy_info.is_quic());
 
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
-      CreateSocketParams(use_tls, host_port_pair, proxy_info,
-                         ssl_config_for_origin, ssl_config_for_proxy,
-                         true /* force_tunnel */, net::PRIVACY_MODE_DISABLED,
+      CreateSocketParams(use_tls, host_port_pair, proxy_info.proxy_server(),
+                         proxy_info.traffic_annotation(), ssl_config_for_origin,
+                         ssl_config_for_proxy, true /* force_tunnel */,
+                         net::PRIVACY_MODE_DISABLED,
                          OnHostResolutionCallback());
   return socket_params->create_connect_job_callback().Run(
       request_priority, SocketTag(), common_connect_job_params,
