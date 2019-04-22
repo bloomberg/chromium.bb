@@ -66,6 +66,20 @@ class PaintWorkletProxyClientTest : public RenderingTest {
                                             PaintWorkletProxyClient*,
                                             base::WaitableEvent*);
 
+  void AddGlobalScopeOnWorkletThread(WorkerThread* worker_thread,
+                                     PaintWorkletProxyClient* proxy_client,
+                                     base::WaitableEvent* waitable_event) {
+    // The natural flow for PaintWorkletGlobalScope is to be registered with the
+    // proxy client during its first registerPaint call. Rather than circumvent
+    // this with a specialised AddGlobalScopeForTesting method, we just use the
+    // standard flow.
+    worker_thread->GlobalScope()->ScriptController()->Evaluate(
+        ScriptSourceCode(
+            "registerPaint('add_global_scope', class { paint() { } });"),
+        SanitizeScriptErrors::kDoNotSanitize);
+    waitable_event->Signal();
+  }
+
   void RunMultipleGlobalScopeTestsOnWorklet(TestCallback callback) {
     // PaintWorklet is stateless, and this is enforced via having multiple
     // global scopes (which are switched between). To mimic the real world,
@@ -75,6 +89,21 @@ class PaintWorkletProxyClientTest : public RenderingTest {
     for (size_t i = 0; i < PaintWorklet::kNumGlobalScopes; i++) {
       worklet_threads.push_back(CreateThreadAndProvidePaintWorkletProxyClient(
           &GetDocument(), reporting_proxy_.get(), proxy_client_));
+    }
+
+    // Add the global scopes. This must happen on the worklet thread.
+    for (size_t i = 0; i < PaintWorklet::kNumGlobalScopes; i++) {
+      base::WaitableEvent waitable_event;
+      PostCrossThreadTask(
+          *worklet_threads[i]->GetTaskRunner(TaskType::kInternalTest),
+          FROM_HERE,
+          CrossThreadBind(
+              &PaintWorkletProxyClientTest::AddGlobalScopeOnWorkletThread,
+              CrossThreadUnretained(this),
+              CrossThreadUnretained(worklet_threads[i].get()),
+              CrossThreadPersistent<PaintWorkletProxyClient>(proxy_client_),
+              CrossThreadUnretained(&waitable_event)));
+      waitable_event.Wait();
     }
 
     // Now let the test actually run. We only run the test on the first worklet
@@ -88,7 +117,6 @@ class PaintWorkletProxyClientTest : public RenderingTest {
             CrossThreadPersistent<PaintWorkletProxyClient>(proxy_client_),
             CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
-    waitable_event.Reset();
 
     // And finally clean up.
     for (size_t i = 0; i < PaintWorklet::kNumGlobalScopes; i++) {
@@ -100,7 +128,13 @@ class PaintWorkletProxyClientTest : public RenderingTest {
   void RunPaintOnWorklet(WorkerThread* thread,
                          PaintWorkletProxyClient* proxy_client,
                          base::WaitableEvent* waitable_event) {
-    // Make sure to register the painter on all global scopes.
+    // Assert that all global scopes have been registered. Note that we don't
+    // use ASSERT_EQ here as that would crash the worklet thread and the test
+    // would timeout rather than fail.
+    EXPECT_EQ(proxy_client->GetGlobalScopesForTesting().size(),
+              PaintWorklet::kNumGlobalScopes);
+
+    // Register the painter on all global scopes.
     for (const auto& global_scope : proxy_client->GetGlobalScopesForTesting()) {
       global_scope->ScriptController()->Evaluate(
           ScriptSourceCode("registerPaint('foo', class { paint() { } });"),
