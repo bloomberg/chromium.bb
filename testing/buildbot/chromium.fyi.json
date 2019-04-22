@@ -98,18 +98,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -290,17 +278,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -1894,17 +1871,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -2135,17 +2101,6 @@
         "test": "installer_util_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -5957,19 +5912,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "isolate_coverage_data": true,
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -6256,18 +6198,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "isolate_coverage_data": true,
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -7544,18 +7474,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -7753,17 +7671,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -8294,19 +8201,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "isolate_coverage_data": true,
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -8523,18 +8417,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "isolate_coverage_data": true,
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -11648,18 +11530,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11857,17 +11727,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -12501,25 +12360,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.14.5"
-            }
-          ],
-          "expiration": 21600,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12903,24 +12743,6 @@
           ],
           "expiration": 21600,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.14.5"
-            }
-          ],
-          "expiration": 21600
         },
         "test": "interactive_ui_tests"
       },

@@ -181,24 +181,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.10"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -553,23 +535,6 @@
             }
           ],
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.10"
-            }
-          ]
         },
         "test": "interactive_ui_tests"
       },
@@ -1330,24 +1295,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.11"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1702,23 +1649,6 @@
             }
           ],
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.11"
-            }
-          ]
         },
         "test": "interactive_ui_tests"
       },
@@ -2479,24 +2409,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2851,23 +2763,6 @@
             }
           ],
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
-            }
-          ]
         },
         "test": "interactive_ui_tests"
       },
@@ -3665,24 +3560,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13.6"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4037,23 +3914,6 @@
             }
           ],
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13.6"
-            }
-          ]
         },
         "test": "interactive_ui_tests"
       },
@@ -4845,24 +4705,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13.6"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5217,23 +5059,6 @@
             }
           ],
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13.6"
-            }
-          ]
         },
         "test": "interactive_ui_tests"
       },
@@ -6019,24 +5844,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13.6"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -6391,23 +6198,6 @@
             }
           ],
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13.6"
-            }
-          ]
         },
         "test": "interactive_ui_tests"
       },

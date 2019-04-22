@@ -95,18 +95,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -311,17 +299,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -747,24 +724,6 @@
               "os": "Windows-10-15063"
             }
           ]
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ],
-          "shards": 4
         },
         "test": "browser_tests"
       },
@@ -1232,23 +1191,6 @@
             }
           ],
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
         },
         "test": "interactive_ui_tests"
       },
@@ -2359,23 +2301,6 @@
           ]
         },
         "test": "installer_util_unittests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "interactive_ui_tests"
       },
       {
         "swarming": {
@@ -8265,18 +8190,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -8474,17 +8387,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -8886,19 +8788,6 @@
       },
       {
         "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -9173,18 +9062,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -9668,18 +9545,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -9877,17 +9742,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -10234,18 +10088,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -10443,17 +10285,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -10802,18 +10633,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11011,17 +10830,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 6
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -11376,18 +11184,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -11585,17 +11381,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -11951,18 +11736,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -12160,17 +11933,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -12521,18 +12283,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -12713,17 +12463,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -13194,19 +12933,6 @@
       },
       {
         "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -13469,18 +13195,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -13880,18 +13594,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -14072,17 +13774,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -14519,18 +14210,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -14770,17 +14449,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -15154,18 +14822,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -15405,17 +15061,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -15789,18 +15434,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -16040,17 +15673,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -16504,24 +16126,6 @@
               "os": "Windows-10-15063"
             }
           ]
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ],
-          "shards": 4
         },
         "test": "browser_tests"
       },
@@ -16989,23 +16593,6 @@
             }
           ],
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
         },
         "test": "interactive_ui_tests"
       },
@@ -17719,24 +17306,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -18200,23 +17769,6 @@
             }
           ],
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
         },
         "test": "interactive_ui_tests"
       },
@@ -18930,24 +18482,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -19411,23 +18945,6 @@
             }
           ],
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
         },
         "test": "interactive_ui_tests"
       },
@@ -20057,18 +19574,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -20308,17 +19813,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -20692,18 +20186,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -20943,17 +20425,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -21327,18 +20798,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -21578,17 +21037,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -21962,18 +21410,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -22213,17 +21649,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -22597,18 +22022,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -22848,17 +22261,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -23232,18 +22634,6 @@
         "test": "browser_tests"
       },
       {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -23441,17 +22831,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
         },
         "test": "interactive_ui_tests"
       },
@@ -23858,23 +23237,6 @@
               "os": "Windows-10"
             }
           ]
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10"
-            }
-          ],
-          "shards": 4
         },
         "test": "browser_tests"
       },
@@ -24293,22 +23655,6 @@
             }
           ],
           "shards": 3
-        },
-        "test": "interactive_ui_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter"
-        ],
-        "name": "webui_polymer1_interactive_ui_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10"
-            }
-          ]
         },
         "test": "interactive_ui_tests"
       },

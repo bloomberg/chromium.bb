@@ -3999,23 +3999,6 @@
         ],
         'test': 'browser_tests',
       },
-      'webui_polymer1_browser_tests': {
-        'args': [
-          '--disable-features=WebUIPolymer2',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter',
-        ],
-        'swarming': {
-          'shards': 4,
-        },
-        'test': 'browser_tests',
-      },
-      'webui_polymer1_interactive_ui_tests': {
-        'args': [
-          '--disable-features=WebUIPolymer2',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_interactive_ui_tests.filter',
-        ],
-        'test': 'interactive_ui_tests',
-      },
     },
 
     'non_linux_chromium_gtests': {
