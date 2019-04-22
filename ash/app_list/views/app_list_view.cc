@@ -1372,6 +1372,7 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
 }
 
 void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {
+  state_animation_metrics_reporter_->SetTargetState(AppListViewState::CLOSED);
   if (is_side_shelf_)
     return;
 
@@ -1382,7 +1383,6 @@ void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {
     animation_duration /= 2;
   }
 
-  state_animation_metrics_reporter_->SetTargetState(AppListViewState::CLOSED);
   SetState(AppListViewState::CLOSED);
   app_list_main_view_->contents_view()->FadeOutOnClose(animation_duration);
 }
