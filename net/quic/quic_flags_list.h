@@ -101,6 +101,12 @@ QUIC_FLAG(int32_t, FLAGS_quic_lumpy_pacing_size, 1)
 // pacing.
 QUIC_FLAG(double, FLAGS_quic_lumpy_pacing_cwnd_fraction, 0.25f)
 
+// If true, static streams in a QuicSession will be stored inside dynamic
+// stream map. static_stream_map will no longer be used.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_eliminate_static_stream_map,
+          false)
+
 // Default enables QUIC ack decimation and adds a connection option to disable
 // it.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_ack_decimation, false)
@@ -115,9 +121,7 @@ QUIC_FLAG(int32_t, FLAGS_quic_max_pace_time_into_future_ms, 10)
 QUIC_FLAG(double, FLAGS_quic_pace_time_into_future_srtt_fraction, 0.125f)
 
 // Mechanism to override version label and ALPN for IETF interop.
-QUIC_FLAG(int32_t,  // allow-non-std-int
-          FLAGS_quic_ietf_draft_version,
-          0)
+QUIC_FLAG(int32_t, FLAGS_quic_ietf_draft_version, 0)
 
 // If true, enable QUIC v44.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_44, true)
