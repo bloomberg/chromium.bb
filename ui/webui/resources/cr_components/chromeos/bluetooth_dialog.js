@@ -117,7 +117,8 @@ Polymer({
    * @param {!{message: string}} lastError chrome.runtime.lastError
    * @param {chrome.bluetoothPrivate.ConnectResultType} result The connect
    *     result
-   * @return {boolean}
+   * @return {boolean} True if the dialog considers this a fatal error and
+   *     is displaying an error message.
    */
   handleError: function(device, lastError, result) {
     let error;
@@ -135,6 +136,9 @@ Polymer({
           error = result;
       }
     }
+
+    // Attempting to connect and pair has failed. Remove listeners.
+    this.endPairing();
 
     const name = device.name || device.address;
     let id = 'bluetooth_connect_' + error;
