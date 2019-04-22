@@ -24,7 +24,8 @@ declare_args() {
 }
 
 trichrome_jinja_variables = [
-  "min_sdk_version=28",
+  # TODO(torne): make minsdk=Q once we no longer build hacky P version
+  "min_sdk_version=$android_sdk_version",
   "target_sdk_version=$android_sdk_version",
   "trichrome_library=$trichrome_library_package",
   "trichrome_version=$trichrome_version_code",
