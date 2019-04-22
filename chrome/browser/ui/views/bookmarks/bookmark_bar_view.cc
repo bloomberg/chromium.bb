@@ -1435,8 +1435,8 @@ void BookmarkBarView::ShowContextMenuForViewImpl(
 
   context_menu_.reset(new BookmarkContextMenu(
       GetWidget(), browser_, browser_->profile(),
-      browser_->tab_strip_model()->GetActiveWebContents(), parent, nodes,
-      close_on_remove));
+      browser_->tab_strip_model()->GetActiveWebContents(),
+      GetBookmarkLaunchLocation(), parent, nodes, close_on_remove));
   context_menu_->RunMenuAt(point, source_type);
 }
 

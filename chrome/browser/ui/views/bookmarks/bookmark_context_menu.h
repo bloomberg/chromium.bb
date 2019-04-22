@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/bookmarks/bookmark_context_menu_controller.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
@@ -43,6 +44,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
       Browser* browser,
       Profile* profile,
       content::PageNavigator* page_navigator,
+      BookmarkLaunchLocation opened_from,
       const bookmarks::BookmarkNode* parent,
       const std::vector<const bookmarks::BookmarkNode*>& selection,
       bool close_on_remove);
