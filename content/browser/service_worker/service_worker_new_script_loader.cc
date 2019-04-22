@@ -368,7 +368,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveRedirect(
   DCHECK_EQ(type_, Type::kNetworkOnly);
   // Resource requests for service worker scripts should not follow redirects.
   //
-  // Step 7.5: "Set request's redirect mode to "error"."
+  // Step 9.5: "Set request's redirect mode to "error"."
   // https://w3c.github.io/ServiceWorker/#update-algorithm
   CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT),
                   kServiceWorkerRedirectError);
